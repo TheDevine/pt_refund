@@ -1,0 +1,117 @@
+<?php
+
+//start session
+session_start();
+
+
+if (array_key_exists('userid', $_SESSION)){	//If user is logged in show page
+	showPage();
+	
+} elseif($_POST['username']) { //if user has attempted to login, validate login
+
+	if(validateLogin($_POST['username'],$_POST['password'])){
+		showPage();	
+	} else {
+		showLogin('Login invalid. Please try again');	
+	}
+
+} else { 		//Else show login screen
+	showLogin();
+}
+	
+
+	
+
+//Function to display homepage
+
+//REWRITE SO THIS FUNCTION CAN BE KEPT IN EXTERNAL FILE AND USED BY ALL PAGES
+function showHeader($username=''){
+	
+	print <<<HEADER
+<HTML>
+	<HEAD>
+		<TITLE>CHCB Patient Refund Manager</TITLE>
+	</head>
+	<body>
+		<h1 class="title">Patient Refund Manager</h1>
+HEADER;
+
+	if($username){
+		print "<h4 class=\"greeting\">Hi, {$username}!</h4>"
+	}
+
+	print <<<MENU
+		<table class = "topMenu">
+			<tr><td class = "selected">Home</td><td>Refunds</td><td>Reports</td><td>My Account</td></tr>
+		</table>
+MENU;
+
+}
+
+function showFooter(){
+
+print <<<FOOTER
+	</body>
+	</html>
+FOOTER;
+
+}
+
+function showLogin($error=''){
+	
+	showHeader();
+
+	if($error){
+		print $error;	
+	}	
+	
+	print <<<LOGINFORM
+		<form action="{$_SERVER['PHP_SELF']}" method="post">
+		<table>
+			<tr><td><b>Username:</b></td><td><input type="text" name="username" /></td></tr>
+			<tr><td><b>Password:</b></td><td><input type="password" name="password" /></td></tr>
+			<tr><td colspan="2"><button name="Login" type="submit"></button></td></tr>
+		</table>
+		</form>
+LOGINFORM;
+	
+	showFooter();
+
+}
+
+function validateLogin($username ='', $password=''){
+	
+	if($username == 'Jonathan' and $password=='Bowley'){
+		return true;	
+	} else {
+		return false;	
+	}
+
+}
+
+
+function showPage($errors = ''){
+
+	showHeader();
+
+
+	if($errors){
+		//show errors at top of page
+		print '<h2 class = "error"> The following errors were encountered:</h2>';
+		print '<ul><li>';
+		print implode('</li><li>', $errors);
+		print '</li></ul>';
+	}
+
+
+
+	//show list of refunds pending approval if user is administrator
+	
+	//show list of refunds created in last 30 days if user is just a user
+	
+	showFooter();
+
+}
+
+
+?>

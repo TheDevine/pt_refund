@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>add_refund.html</title>
+
+  
+  
+  <meta content="Jonathan Bowley" name="author">
+
+</head><body>
+<big><big><span style="font-weight: bold;">Request a Refund</span></big></big><br>
+
+<br>
+
+<form method="post" action="add_refund.php" name="new_refund">
+  <table style="text-align: left; width: 100%;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">NextGen Encounter Number:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="ng_enc_nbr"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Amount of Refund:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="amount"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Purpose of Refund:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="Purpose"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Payable To:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="payable_to"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Address Line 1:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="address_ln_1"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Address Line 2:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="address_ln_2"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">City:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="city"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">State:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="state"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Zip Code:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="zip"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Date Refund Required:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><input name="date_required"><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;">Comments:<br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><textarea name="comments"></textarea><br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top; width: 257px;"><button value="Submit" name="Submit"></button><br>
+        </td>
+        <td style="vertical-align: top; width: 533px;"><br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+</form>
+
+</body></html>

@@ -1,0 +1,197 @@
+SELECT c.*, d.ranknum
+FROM girl AS c
+  INNER JOIN (
+    SELECT a.id, COUNT(*) AS ranknum
+    FROM girl AS a
+      INNER JOIN girl AS b ON (a.hair = b.hair) AND (a.score <= b.score)
+    GROUP BY a.id
+    HAVING COUNT(*) <= 3
+  ) AS d ON (c.id = d.id)
+ORDER BY c.hair, d.ranknum
+
+
+SELECT c.*, d.ranknum
+FROM girl AS c
+  INNER JOIN (
+    SELECT a.id, COUNT(*) AS ranknum
+    FROM girl AS a
+      INNER JOIN girl AS b ON (a.language = b.language) AND (a.score <= b.score)
+    GROUP BY a.id
+    HAVING COUNT(*) <= 3
+  ) AS d ON (c.id = d.id)
+ORDER BY c.language, d.ranknum
+
+
+Table: girl
+id	name		hair		score
+1	Kim		Brunette	8
+2	Anne		Brunette	7
+3	Sarah		Brunette	10
+4	Deborah		Brunette	9
+5	Mia		Brunette	5
+6	Samantha	Brunette	0
+
+7	Jo Ann		Blonde		7
+8	Katie		Blonde		8
+9	Becca		Blonde		9
+10	Mini		Blonde		5
+11	Lauren		Blonde		4
+12	Kit		Blonde		10
+
+
+
+id	name	hair		score	ranknum
+12	Kit	Blonde		10	1
+9	Becca	Blonde		9	2
+8	Katie	Blonde		8	3
+
+3	Sarah	Brunette	10	1
+4	Deborah	Brunette	9	2
+1	Kim	Brunette	8	3
+
+
+score is like count(medid) AS Number
+
+
+DECLARE @tmp_colo_list table (person_language VARCHAR(100),
+			      med_name VARCHAR(70),
+			      med_id numeric(08))						
+
+INSERT INTO @tmp_colo_list
+SELECT DISTINCT [language], medication_name, count(medid) AS Number 
+FROM person AS p 
+inner join 
+patient_medication AS pm 
+ON p.person_id = pm.person_id 
+WHERE p.person_id IN
+(
+
+
+
+SELECT a.name, a.score, b.name, b.score
+FROM girl AS a INNER JOIN girl AS b ON (a.hair = b.hair)
+
+select a.name, a.score, b.name, b.score
+FROM @tmp_colo_list AS a inner join @tmp_colo_list b ON (a.language = b.language)
+
+
+a.name	a.score		b.name		b.score
+Kim	8		Anne		7
+Kim	8		Deborah		9
+Kim	8		Kim		8
+Kim	8		Mia		5
+Kim	8		Samantha	0
+Kim	8		Sarah		10
+
+
+select a.name, a.score, b.name, b.score
+FROM @tmp_colo_list AS a inner join @tmp_colo_list b ON (a.language = b.language)  AND (a.score <= b.score)
+
+
+a.name	a.score		b.name		b.score
+Kim	8		Deborah		9
+Kim	8		Kim		8
+Kim	8		Sarah		10
+
+
+select a.name, a.score, b.name, b.score, COUNT(*) AS ranknum
+FROM @tmp_colo_list AS a inner join @tmp_colo_list b ON (a.language = b.language)  AND (a.score <= b.score)
+GROUP BY a.language, a.name, a.score
+
+hair		name		score		ranknum
+Brunette	Anne		7		4
+Brunette	Deborah		9		2
+Brunette	Kim		8		3
+Brunette	Mia		5		5
+Brunette	Samantha	0		6
+Brunette	Sarah		10		1
+
+
+
+hair		name		score	ranknum
+Brunette	Sarah		10	1
+Brunette	Deborah		9	2
+Brunette	Kim		8	3
+
+
+SELECT a.language, a.name, a.score, COUNT(*) AS ranknum
+FROM girl AS a INNER JOIN girl AS b ON (a.language = b.language) AND (a.score <= b.score)
+GROUP BY a.language, a.name, a.score
+
+
+select a.language, a.name, a.score, b.name, b.score, COUNT(*) AS ranknum
+FROM @tmp_colo_list AS a inner join @tmp_colo_list b ON (a.language = b.language)  AND (a.score <= b.score)
+GROUP BY a.language, a.name, a.score
+HAVING COUNT(*) <= 3
+
+
+SELECT a.id, a.language, a.name, a.score, COUNT(*) AS ranknum
+FROM girl AS a INNER JOIN girl AS b ON (a.language = b.language) AND (a.score <= b.score)
+GROUP BY a.id, a.language, a.name, a.score
+HAVING COUNT(*) <= 3
+
+
+SELECT a.id, COUNT(*) AS ranknum
+FROM girl AS a INNER JOIN girl AS b ON (a.language = b.language) AND (a.score <= b.score)
+GROUP BY a.id
+HAVING COUNT(*) <= 3
+
+
+SELECT c.*, d.ranknum
+FROM girl AS c
+  INNER JOIN (
+    SELECT a.id, COUNT(*) AS ranknum
+    FROM girl AS a INNER JOIN girl AS b ON (a.language = b.language) AND (a.score <= b.score)
+    GROUP BY a.id
+    HAVING COUNT(*) <= 3
+  ) AS d ON (c.id = d.id)
+ORDER BY c.language, d.ranknum
+
+
+
+
+//Below is working almost, now need to subgroup by languages
+SELECT TOP 20 [medication_name], count(medid) AS score, [language] from person AS p inner join patient_medication AS pm ON p.person_id = pm.person_id GROUP BY language,medication_name ORDER BY 2 DESC
+
+
+//Below is working almost, now need to subgroup by languages
+SELECT TOP 20 [medication_name], count(medid) AS Number, [language] from person AS p inner join patient_medication AS pm ON p.person_id = pm.person_id GROUP BY language,medication_name ORDER BY 2 DESC
+
+
+
+///////////BELOW WORKED!!
+
+
+DECLARE @tmp_colo_lister table (person_language VARCHAR(100),
+							med_name VARCHAR(70),
+							med_ct numeric(08))						
+
+INSERT INTO @tmp_colo_lister
+SELECT DISTINCT [language], medication_name, count(medid) AS Number 
+FROM person AS p 
+inner join 
+patient_medication AS pm 
+ON p.person_id = pm.person_id 
+WHERE p.person_id IN
+(
+select DISTINCT PM.person_id
+	FROM patient_medication as PM
+	INNER JOIN person as PE
+	on PM.person_id = PE.person_id 
+	WHERE medication_name IN ( SELECT TOP 20 [medication_name]
+  FROM [NGReport].[dbo].[patient_medication] AS pd, [NGReport].[dbo].[person] AS pe  
+  where date_stopped >= '20140101' AND date_stopped < '20150101' 
+  AND pd.person_id=pe.person_id )
+
+)
+GROUP BY language,medication_name,p.person_id 
+ORDER BY 3 DESC
+
+
+select a.person_language, a.med_name, a.med_ct
+FROM @tmp_colo_lister AS a inner join @tmp_colo_lister b ON (a.person_language = b.person_language)  AND (a.med_ct <= b.med_ct)
+GROUP BY a.person_language, a.med_name, a.med_ct
+HAVING COUNT(*) <= 20 ORDER BY 1,3 DESC
+
+
+

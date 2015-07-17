@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <title>Create a New User</title>
+  </head>
+  <body>
+    <h1><span style="font-weight: bold;">Create New User</span></h1>
+    <form method="POST" action="add_user.php" name="add_user">
+      <table style="width: 100%" border="1">
+        <tbody>
+          <tr>
+            <td>First Name</td>
+            <td><input maxlength="50" name="first_name" type="text"><br>
+            </td>
+          </tr>
+          <tr>
+            <td>Last Name</td>
+            <td><input maxlength="50" name="last_name" type="text"><br>
+            </td>
+          </tr>
+          <tr>
+            <td>Department</td>
+            <td>
+              <select name="department">
+              </select>
+              <br>
+            </td>
+          </tr>
+          <tr>
+            <td>Access Level</td>
+            <td>
+              <select name="access">
+                <option value="U">User</option>
+                <option value="A">Approver</option>
+                <option value="S">Superuser</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Password</td>
+            <td><input maxlength="10" name="password1" type="password"><br>
+            </td>
+          </tr>
+          <tr>
+            <td>Confirm Password</td>
+            <td><input maxlength="10" name="passwordConfirm" type="password"><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button formmethod="post" formaction="add_user.php" value="submit" name="Submit"></button></form>
+    <p><br>
+    </p>
+  </body>
+</html>
