@@ -20,10 +20,8 @@ include 'connectToDB.php';
 //include 'validateLogin.php';   //uncomment this to show the first edit screen
 //require_once "Mail.php"; (File doesn't exist)
 
-//echo 'Dump all session contents: ';
 //include 'dump_all_page_contents.php'; 
 
-//die();
 
 if(isset($_GET)){
 	
@@ -163,21 +161,6 @@ if(isset($_GET)){
 
 
 
-/*
-if(isset($_GET['page_number'])){
-	//include 'dump_all_page_contents.php'; 
-	//echo 'about to show page <br>';
-//die();
-	showPage();
-}
-*/
-
-//echo 'hi';
-//die();
-
-//_approve_submit
-
-
 if (!isset($_GET['action']) && !isset($_GET['report_id']) && !isset($_POST['report_id'])){
 	
 	//echo '<br> I was coming in here';
@@ -233,7 +216,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 		
 		/*
 		if(isset($_POST['_search_submit']) && $_POST['_search_submit']!="" && $_POST['_search_submit']!=NULL){ 
-		include 'dump_all_page_contents.php'; 
+			include 'dump_all_page_contents.php'; 
 
 		}
 		*/
@@ -302,86 +285,9 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 						
 					mail_presets($to,$status); //creator
 					
-
-					
 				}
 				
-				
-				
-				////
-					//while ($row = mysqli_fetch_array($result)){
 
-					/*
-				
-					//get the name of the department, so we can select the recipients of that department from email_recipients
-					$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
-					$result_dept_id = mysqli_query($db,$query_dept_id);
-					$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
-
-					
-					$query_name="SELECT name FROM departments WHERE dept_id={$rowquery_dept_id['dept_id']}";
-					$result_name = mysqli_query($db,$query_name);
-					$rowquery_dept_name=mysqli_fetch_array($result_name);
-					
-					//define/initialize the temp recipient variables
-					$rec_1="";$rec_2="";$rec_3="";
-
-					
-					//Select the recipients user_ids based on the recipients specified by the step in the process of the approval ($rowquery_dept_name['name'])
-					$query = "SELECT recipient_1,recipient_2,recipient_3 FROM email_recipients WHERE step='{$rowquery_dept_name['name']}'";
-
-					//echo $query;
-					//echo '<br>';
-					
-					
-					$result = mysqli_query($db,$query);
-					
-					$rowUserIds=mysqli_fetch_array($result);
-					
-					$rec_1=$rowUserIds['recipient_1'];
-					$rec_2=$rowUserIds['recipient_2'];
-					$rec_3=$rowUserIds['recipient_3'];
-					
-					
-					$date_requested=$row['dt_request'];
-								
-					$query = "SELECT dt_request from refund WHERE refund_id= '{$_POST['refund_id']}'";
-					$result = mysqli_query($db,$query);
-
-					
-					//SEND warning emails if past 15 or 30 Days/////////////////////////////////////////////////////////////////////////////////////////////////////
-					$today_dt = new DateTime($current_date);
-					$entered_dt = new DateTime($date_requested);
-					$interval = date_diff($entered_dt,$today_dt);
-
-					$refund_assigned_to="";
-					$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
-					$resultUserIDs = mysqli_query($db,$queryUserIDs); 
-
-					while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
-						$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
-					}
-					
-				
-					
-					//select info to build up email for creator notification of rejection//////////////////////////////////////////////////////////////////////////////////////
-					$created_by="";	
-					$status="";
-					$query = "SELECT created_by FROM refund WHERE refund_id = {$_POST['refund_id']} ";
-					$result = mysqli_query($db,$query);
-						while ($row = mysqli_fetch_array($result)){
-							$created_by=$row['created_by'];
-						}
-						
-					$queryUsername = "SELECT username FROM users WHERE user_id='{$created_by}'";
-					$resultUsername = mysqli_query($db,$queryUsername);
-
-					$rowUsername=mysqli_fetch_array($resultUsername);
-					$to=$rowUsername['username'].'@chcb.org';
-					
-					*/
-					
-					
 					$status="Re-Assigned";
 					
 					///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -445,10 +351,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 
 		//once user is authenticated, check to see if this form has been submitted
 		elseif(isset($_POST['_edit_submit']) && $_POST['_edit_submit']!="" && $_POST['_edit_submit']!=NULL){ 
-		
-
-		//die();
-		
+	
 		//Edit user form has been submitted so it's time to update the database
 
 			//uncomment the next line to toggle session dumps on and off
@@ -469,13 +372,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				purpose='{$_POST['purpose']}', modfied_by={$_SESSION['userid']}, modified_dt='{$now}',
 				comments ='{$_POST['comments']}' WHERE refund_id = {$_POST['refund_id']} ";
 				
-				/*
-				$query = "UPDATE refund SET NG_enc_id = '{$_POST['enc_nbr']}', dt_required = '{$_POST['dt_required']}', 
-				amount = '{$_POST['amount']}', payable='{$_POST['payable']}', addr_ln_1 ='{$_POST['addr_ln_1']}', 
-				addr_ln_2='{$_POST['addr_ln_2']}', city ='{$_POST['city']}', state='{$_POST['state']}', zip='{$_POST['zip']}', 
-				purpose='{$_POST['purpose']}', status='UPDATED', modfied_by={$_SESSION['userid']}, modified_dt='{$now}',
-				comments ='{$_POST['comments']}' WHERE refund_id = {$_POST['refund_id']} ";
-				*/
+
 				$result = mysqli_query($db,$query);
 				if (@mysqli_error($result)){
 					print mysqli_error($result);
@@ -498,20 +395,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				
 				///GET DEPT NAME//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-				$rec_1="";$rec_2="";$rec_3="";
-
-				$query = "SELECT recipient_1,recipient_2,recipient_3 FROM email_recipients WHERE step='{$rowquery_dept_name['name']}'";
-				//$query = "SELECT recipient_1,recipient_2,recipient_3 FROM email_recipients WHERE step='accounting' ";
-				
-				$result = mysqli_query($db,$query);
-				
-				$rowUserIds=mysqli_fetch_array($result);
-				
-				$rec_1=$rowUserIds['recipient_1'];
-				$rec_2=$rowUserIds['recipient_2'];
-				$rec_3=$rowUserIds['recipient_3'];
-				
-				
+							
 				//select info to build up email for creator notification of rejection//////////////////////////////////////////////////////////////////////////////////////
 				$created_by="";	
 				$status="";
@@ -532,71 +416,9 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 
 				mail_presets($to,$status);
 				
-				/*
-			
-				if($rec_1!="" && $rec_1!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_1}'";
-					$result = mysqli_query($db,$query);
-
-					$rowUserNames=mysqli_fetch_array($result);
-
-					$to=$rowUserNames['username'].'@chcb.org';
-
-					echo 'the to is <br>';
-					echo $to.'<br>';
-					
-					
-					//mail the recipient the notification
-					mail_presets($to);		
-				
-					
-				}
-				
-				if($rec_2!="" && $rec_2!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_2}'";
-					$result = mysqli_query($db,$query);
-					
-					$rowUserName2=mysqli_fetch_array($result);
-					
-					$to=$rowUserName2['username'].'@chcb.org';
-
-					//mail the recipient the notification
-					mail_presets($to);		
-				}
-				
-				if($rec_3!="" && $rec_3!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_3}'";
-					$result = mysqli_query($db,$query);
-					
-					$rowUserName3=mysqli_fetch_array($result);
-					
-					$to=$rowUserName3['username'].'@chcb.org';
-					
-				
-					
-					//mail the recipient the notification
-					mail_presets($to);		
-					
-				}
-
-				*/
-								
-
-				//echo 'am i here';
-				
-				//die();
+	
 				
 				/*
-				
-				
-				mail_presets($to);		
-
 				//SEND OFF EMAIL HERE
 				
 				//send notification that a new refund has been created
@@ -645,9 +467,14 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		elseif(isset($_POST['_del_submit']) && $_POST['_del_submit']!="" && $_POST['_del_submit']!=NULL){ 
-		
-		$now = date("Y-m-d H:i:s");			
+			
+			$now = date("Y-m-d H:i:s");		
 
+			$query_status="SELECT status FROM refund WHERE refund_id={$_POST['refund_id']}";
+			$result_status = mysqli_query($db,$query_status);
+			$rowquery_status=mysqli_fetch_array($result_status);
+			
+		
 			//update the record in the DB as voided
 			$query = "UPDATE refund SET 
 			status='VOIDED', 
@@ -656,6 +483,12 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 			WHERE refund_id = {$_POST['refund_id']} ";
 			
 			$result = mysqli_query($db,$query);
+			
+			//TRACK CHANGES
+				$status_before=$rowquery_status['status'];
+				$status_after='VOIDED';
+				trackRefundChanges($_POST,$status_before,$status_after);		
+			//TRACK THE CHANGES		
 			
 			if (@mysqli_error($result)){
 				print mysqli_error($result);
@@ -674,21 +507,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				
 				///GET DEPT NAME//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-				$rec_1="";$rec_2="";$rec_3="";
 
-				$query = "SELECT recipient_1,recipient_2,recipient_3 FROM email_recipients WHERE step='{$rowquery_dept_name['name']}'";
-				//$query = "SELECT recipient_1,recipient_2,recipient_3 FROM email_recipients WHERE step='accounting' ";
-				
-				$result = mysqli_query($db,$query);
-				
-				$rowUserIds=mysqli_fetch_array($result);
-				
-				$rec_1=$rowUserIds['recipient_1'];
-				$rec_2=$rowUserIds['recipient_2'];
-				$rec_3=$rowUserIds['recipient_3'];
-				
-				
-				
 				//select info to build up email for creator notification of rejection//////////////////////////////////////////////////////////////////////////////////////
 				$created_by="";	
 				$status="";
@@ -709,66 +528,9 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 
 				mail_presets($to,$status);	
 				
-				/*
-					
-				if($rec_1!="" && $rec_1!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_1}'";
-					$result = mysqli_query($db,$query);
-
-					$rowUserNames=mysqli_fetch_array($result);
-
-					$to=$rowUserNames['username'].'@chcb.org';
-
-					echo 'the to is <br>';
-					echo $to.'<br>';
-					
-					
-					//mail the recipient the notification
-					mail_presets($to);		
-				
-					
-				}
-				
-				if($rec_2!="" && $rec_2!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_2}'";
-					$result = mysqli_query($db,$query);
-					
-					$rowUserName2=mysqli_fetch_array($result);
-					
-					$to=$rowUserName2['username'].'@chcb.org';
-
-					//mail the recipient the notification
-					mail_presets($to);		
-				}
-				
-				if($rec_3!="" && $rec_3!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_3}'";
-					$result = mysqli_query($db,$query);
-					
-					$rowUserName3=mysqli_fetch_array($result);
-					
-					$to=$rowUserName3['username'].'@chcb.org';
-					
-				
-					
-					//mail the recipient the notification
-					mail_presets($to);		
-					
-				}
-				*/
-		
+	
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				//	echo 'the post dump is ';
-			//var_dump($_POST);
-			
-
 			
 				//START Derek Hack////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				//Hack inserted because app previously wasn't immediately displaying changes, forces a refresh of page if the form has been submitted.
@@ -804,14 +566,13 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 
 		elseif(isset($_POST['_rej_submit']) && $_POST['_rej_submit']!="" && $_POST['_rej_submit']!=NULL){ 
 		
-				//include 'connectToDB.php'; 
 
-				echo 'do I ever get here';
-				die();
-	
-				$now = date("Y-m-d H:i:s");			
+				$now = date("Y-m-d H:i:s");		
 
-		
+				$query_status="SELECT status FROM refund WHERE refund_id={$_POST['refund_id']}";
+				$result_status = mysqli_query($db,$query_status);
+				$rowquery_status=mysqli_fetch_array($result_status);				
+
 				$query_reject = "UPDATE refund SET 
 				status='REJECTED', 
 				modified_by='{$_SESSION['userid']}', 
@@ -820,13 +581,20 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				WHERE refund_id = '{$_POST['refund_id']}' ";
 				
 				$result_reject = mysqli_query($db,$query_reject);
+				
+				
+				//TRACK CHANGES
+					$status_before=$rowquery_status['status'];
+					$status_after='REJECTED';
+					trackRefundChanges($_POST,$status_before,$status_after);		
+				//TRACK THE CHANGES		
+				
 
 				if (@mysqli_error($result_reject)){
 					print mysqli_error($result_reject);
 				}
 
-				
-
+			
 				
 				//select info to build up email for creator notification of rejection//////////////////////////////////////////////////////////////////////////////////////
 				$created_by="";	
@@ -934,69 +702,12 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-				/*
-					
-				if($rec_1!="" && $rec_1!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_1}'";
-					$result = mysqli_query($db,$query);
-
-					$rowUserNames=mysqli_fetch_array($result);
-
-					$to=$rowUserNames['username'].'@chcb.org';
-
-					echo 'the to is <br>';
-					echo $to.'<br>';
-					
-					
-					//mail the recipient the notification
-					mail_presets($to);		
-				
-					
-				}
-				
-				if($rec_2!="" && $rec_2!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_2}'";
-					$result = mysqli_query($db,$query);
-					
-					$rowUserName2=mysqli_fetch_array($result);
-					
-					$to=$rowUserName2['username'].'@chcb.org';
-
-					//mail the recipient the notification
-					mail_presets($to);		
-				}
-				
-				if($rec_3!="" && $rec_3!=NULL){
-					//select their names and email them
-
-					$query = "SELECT username FROM users WHERE user_id='{$rec_3}'";
-					$result = mysqli_query($db,$query);
-					
-					$rowUserName3=mysqli_fetch_array($result);
-					
-					$to=$rowUserName3['username'].'@chcb.org';
-					
-				
-					
-					//mail the recipient the notification
-					mail_presets($to);		
-					
-				}
-				
-				*/
+			
 		
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//die();
-			/*
-			echo 'the post dump is ';
-			var_dump($_POST);
-			*/
-			
+
 			
 				//START Derek Hack////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				//Hack inserted because app previously wasn't immediately displaying changes, forces a refresh of page if the form has been submitted.
@@ -1004,7 +715,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				//Refresh the page if you just edited a refund, but before you hit the back to refunds page
 				if(isset($_POST['_rej_submit'])){
 					
-					echo 'do I enter';
+					//echo 'do I enter';
 					
 					//include 'dump_all_page_contents.php'; 
 					//build up the redirect string to redirect to the edit page of the refund you are currently editing (needs to reference correct refund_id)
@@ -1038,10 +749,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		elseif(isset($_POST['_app_submit']) && $_POST['_app_submit']!="" && $_POST['_app_submit']!=NULL){ 
 		
-		echo 'coming in here';
-die();
-		//The approval process
-		
+
 			//global $db;
 
 			$now = date("Y-m-d H:i:s");			
@@ -1095,7 +803,10 @@ die();
 							accounting_approval=1,
 							voided =0 
 						WHERE refund_id = {$_POST['refund_id']} ";
-					
+						
+						
+						
+
 					}else{
 						$query = "UPDATE refund 
 							SET status='ACCOUNTING APPROVAL',

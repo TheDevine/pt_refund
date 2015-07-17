@@ -1954,8 +1954,23 @@ function approveTheRefund(){
 							accounting_approval=1,
 							voided =0 
 						WHERE refund_id = {$_POST['refund_id']} ";
+					
 						
 						$result = mysqli_query($db,$query); //execute the update
+						
+						//TRACK CHANGES
+						IF ($billing_initial_approval){ //WAS IN THIS STAGE BEFORE THE ABOVE UPDATE
+						
+							$status_before='ACCOUNTING APPROVAL';
+							$status_after='ACCOUNTING APPROVED';
+							
+							trackRefundChanges($_POST,$status_before,$status_after);				
+							//$queryStatusChange = "INSERT INTO refund_changes (refund_id, status_before, status_after, date, name) VALUES ('{$_POST['refund_id']}','ACCOUNTING APPROVAL','ACCOUNTING APPROVED','{$now}','{$_SESSION['userid']}'";
+							//$result = mysqli_query($db,$queryStatusChange);
+						}
+						
+						
+						//TRACK THE CHANGES
 						
 						echo 'the result was <br>';
 						echo $query;
@@ -2091,7 +2106,15 @@ function approveTheRefund(){
 
 						$result = mysqli_query($db,$query); //execute the update
 
-						
+												
+						//TRACK CHANGES
+							$status_before=$status;
+							$status_after='ACCOUNTING APPROVAL';
+							
+							trackRefundChanges($_POST,$status_before,$status_after);		
+					
+						//TRACK THE CHANGES
+
 						////////
 
 						$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." has initial approval by PAR2. <br> ";
@@ -2166,61 +2189,68 @@ function approveTheRefund(){
 						WHERE refund_id = {$_POST['refund_id']} ";
 						
 						$result = mysqli_query($db,$query); //execute the update
+
+						//TRACK CHANGES
+							$status_before=$status;
+							$status_after='COMPLETED';
+							trackRefundChanges($_POST,$status_before,$status_after);		
+						//TRACK THE CHANGES
+
 						
-								//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
-								//select info to build up email for creator notification//////////////////////////////////////////////////////////////////////////////////////
-								$created_by="";	
-								$status="";
-								$is_urgent="";
-								$payable_to="";
-								$query = "SELECT created_by,urgent,payable FROM refund WHERE refund_id = {$_POST['refund_id']} ";
-								$result = mysqli_query($db,$query);
-								
-									while ($row = mysqli_fetch_array($result)){
-										$created_by=$row['created_by'];
-										$is_urgent=$row['urgent'];
-										$payable_to=$row['payable'];
-									}
-									
-								$queryUsername = "SELECT username FROM users WHERE user_id='{$created_by}'";
-								$resultUsername = mysqli_query($db,$queryUsername);
-
-								$rowUsername=mysqli_fetch_array($resultUsername);
-								$to=$rowUsername['username'].'@chcb.org';
-								
-								//send notification that a refund has been billing approved: call mail_presets
-								//RULE: ON Billing Approval:
-								//IF urgent status email both creator and Erika, otherwise just email Erika///////////////////////////////////////////
-								//Email Three people from PAR1 -->Laura W., E.B., and Kim F. //
-								
-								if($is_urgent){ //verify that this works as intended
-								
-									//$last_id = mysqli_insert_id($db);
-									$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." has been approved by billing and is now marked as completed. <br>  This refund was marked as URGENT.";
-										
-									mail_presets($to,$status); //creator
-									mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
-									
-									//email PAR1 recipients
-									mail_presets("lwheatley@chcb.org",$status); //email 
-									mail_presets("kfuller@chcb.org",$status); //email 
-
-
-								}else{
-						
-									//$last_id = mysqli_insert_id($db);
-									$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." has been approved by billing and is now marked as completed.";
-										
-									mail_presets($to,$status); //creator
-									mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)		
-									
-									//email PAR1 recipients
-									mail_presets("lwheatley@chcb.org",$status); //email 
-									mail_presets("kfuller@chcb.org",$status); //email 
-
-									
+							//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
+							//select info to build up email for creator notification//////////////////////////////////////////////////////////////////////////////////////
+							$created_by="";	
+							$status="";
+							$is_urgent="";
+							$payable_to="";
+							$query = "SELECT created_by,urgent,payable FROM refund WHERE refund_id = {$_POST['refund_id']} ";
+							$result = mysqli_query($db,$query);
+							
+								while ($row = mysqli_fetch_array($result)){
+									$created_by=$row['created_by'];
+									$is_urgent=$row['urgent'];
+									$payable_to=$row['payable'];
 								}
-	
+								
+							$queryUsername = "SELECT username FROM users WHERE user_id='{$created_by}'";
+							$resultUsername = mysqli_query($db,$queryUsername);
+
+							$rowUsername=mysqli_fetch_array($resultUsername);
+							$to=$rowUsername['username'].'@chcb.org';
+							
+							//send notification that a refund has been billing approved: call mail_presets
+							//RULE: ON Billing Approval:
+							//IF urgent status email both creator and Erika, otherwise just email Erika///////////////////////////////////////////
+							//Email Three people from PAR1 -->Laura W., E.B., and Kim F. //
+							
+							if($is_urgent){ //verify that this works as intended
+							
+								//$last_id = mysqli_insert_id($db);
+								$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." has been approved by billing and is now marked as completed. <br>  This refund was marked as URGENT.";
+									
+								mail_presets($to,$status); //creator
+								mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
+								
+								//email PAR1 recipients
+								mail_presets("lwheatley@chcb.org",$status); //email 
+								mail_presets("kfuller@chcb.org",$status); //email 
+
+
+							}else{
+					
+								//$last_id = mysqli_insert_id($db);
+								$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." has been approved by billing and is now marked as completed.";
+									
+								mail_presets($to,$status); //creator
+								mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)		
+								
+								//email PAR1 recipients
+								mail_presets("lwheatley@chcb.org",$status); //email 
+								mail_presets("kfuller@chcb.org",$status); //email 
+
+								
+							}
+
 						}else{ //if greater than 500, update with second approval
 							//status is set as BILLING APPROVED as soon as either PAR2 verifies and accounting, 
 							//or PAR2 double verifies and accounting
@@ -2234,59 +2264,64 @@ function approveTheRefund(){
 						
 						$result = mysqli_query($db,$query); //execute the update
 						
+						//TRACK CHANGES
+							$status_before=$status;
+							$status_after='BILLING APPROVED';
+							trackRefundChanges($_POST,$status_before,$status_after);		
+						//TRACK THE CHANGES						
 						
-								//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
-								//select info to build up email for creator notification//////////////////////////////////////////////////////////////////////////////////////
-								$created_by="";	
-								$status="";
-								$is_urgent="";
-								$payable_to="";
-								$query = "SELECT created_by,urgent,payable FROM refund WHERE refund_id = {$_POST['refund_id']} ";
-								$result = mysqli_query($db,$query);
-								
-									while ($row = mysqli_fetch_array($result)){
-										$created_by=$row['created_by'];
-										$is_urgent=$row['urgent'];
-										$payable_to=$row['payable'];
-									}
-									
-								$queryUsername = "SELECT username FROM users WHERE user_id='{$created_by}'";
-								$resultUsername = mysqli_query($db,$queryUsername);
-
-								$rowUsername=mysqli_fetch_array($resultUsername);
-								$to=$rowUsername['username'].'@chcb.org';
-								
-								//send notification that a refund has been billing approved: call mail_presets
-								//RULE: ON Billing Approval:
-								//IF urgent status email both creator and Erika, otherwise just email Erika///////////////////////////////////////////
-								//Email Three people from PAR1 -->Laura W., E.B., and Kim F. //
-								
-								if($is_urgent){ //verify that this works as intended
-								
-									//$last_id = mysqli_insert_id($db);
-									$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." has received dual approval by Billing and is awaiting final completion by PAR1. <br>  This refund was marked as URGENT.";
-										
-									mail_presets($to,$status); //creator
-									mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
-									
-									//email PAR1 recipients
-									mail_presets("lwheatley@chcb.org",$status); //email 
-									mail_presets("kfuller@chcb.org",$status); //email 
-
-								}else{
-						
-									//$last_id = mysqli_insert_id($db);
-									$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." received dual approval by Billing and is awaiting final completion by PAR1.";
-										
-									mail_presets($to,$status); //creator
-									mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)		
-									
-									//email PAR1 recipients
-									mail_presets("lwheatley@chcb.org",$status); //email 
-									mail_presets("kfuller@chcb.org",$status); //email 
-									
-									
+							//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
+							//select info to build up email for creator notification//////////////////////////////////////////////////////////////////////////////////////
+							$created_by="";	
+							$status="";
+							$is_urgent="";
+							$payable_to="";
+							$query = "SELECT created_by,urgent,payable FROM refund WHERE refund_id = {$_POST['refund_id']} ";
+							$result = mysqli_query($db,$query);
+							
+								while ($row = mysqli_fetch_array($result)){
+									$created_by=$row['created_by'];
+									$is_urgent=$row['urgent'];
+									$payable_to=$row['payable'];
 								}
+								
+							$queryUsername = "SELECT username FROM users WHERE user_id='{$created_by}'";
+							$resultUsername = mysqli_query($db,$queryUsername);
+
+							$rowUsername=mysqli_fetch_array($resultUsername);
+							$to=$rowUsername['username'].'@chcb.org';
+							
+							//send notification that a refund has been billing approved: call mail_presets
+							//RULE: ON Billing Approval:
+							//IF urgent status email both creator and Erika, otherwise just email Erika///////////////////////////////////////////
+							//Email Three people from PAR1 -->Laura W., E.B., and Kim F. //
+							
+							if($is_urgent){ //verify that this works as intended
+							
+								//$last_id = mysqli_insert_id($db);
+								$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." has received dual approval by Billing and is awaiting final completion by PAR1. <br>  This refund was marked as URGENT.";
+									
+								mail_presets($to,$status); //creator
+								mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
+								
+								//email PAR1 recipients
+								mail_presets("lwheatley@chcb.org",$status); //email 
+								mail_presets("kfuller@chcb.org",$status); //email 
+
+							}else{
+					
+								//$last_id = mysqli_insert_id($db);
+								$status="The Refund for ".$payable_to." with a Refund ID of ".$_POST['refund_id']." received dual approval by Billing and is awaiting final completion by PAR1.";
+									
+								mail_presets($to,$status); //creator
+								mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)		
+								
+								//email PAR1 recipients
+								mail_presets("lwheatley@chcb.org",$status); //email 
+								mail_presets("kfuller@chcb.org",$status); //email 
+								
+								
+							}
 						
 						}//end else amount > 500
 						
@@ -2305,6 +2340,12 @@ function approveTheRefund(){
 								$result = mysqli_query($db,$query); //execute the update
 						
 						}
+						
+						//TRACK CHANGES
+							$status_before=$status;
+							$status_after='COMPLETED';
+							trackRefundChanges($_POST,$status_before,$status_after);		
+						//TRACK THE CHANGES		
 
 						//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
 						//select info to build up email for creator notification of rejection//////////////////////////////////////////////////////////////////////////////////////
@@ -4933,6 +4974,13 @@ function sendEmailBillingInitialApproved(){
  				$username = "jonathan@jonathanbowley.com";
  				$password = "paw52beh";
 
+	
+}
+
+function trackRefundChanges($_POST,$status_before,$status_after){
+	$now = date("Y-m-d H:i:s");	
+	$queryStatusChange = "INSERT INTO refund_changes (refund_id, status_before, status_after, date, name) VALUES ('{$_POST['refund_id']}','{$status_before}','{$status_after}','{$now}','{$_SESSION['userid']}'";
+	$result = mysqli_query($db,$queryStatusChange);
 	
 }
 

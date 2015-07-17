@@ -493,9 +493,9 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				echo '<br>';
 				
 				
-				echo 'am i here';
+				//echo 'am i here';
 				
-				die();
+				//die();
 				//echo "I'm now about to refresh the page <br>";
 			
 				//START Derek Hack////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
