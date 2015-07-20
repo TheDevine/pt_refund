@@ -14,11 +14,13 @@ $db = mysqli_connect('localhost','ptrefund','x22m3y2k','pt_refund'); //connect t
 //include 'lib\refundFunctions.php';
 include 'connectToDB.php'; 
 
+
 if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for access level 
 	if($_SESSION['access']=='S' OR $_SESSION['access']=='U' OR $_SESSION['access']=='A'){
+		
 		//once user is autheticated, check to see if this form has been submitted
 		if(isset($_POST['_submit_check'])){ //form has been submitted
-			//check for errors
+		
 			if(validateNewRefund()=='valid') //if no errors, create user in db and show success message
 			{
 				//create user in db
@@ -37,7 +39,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				$last_id = mysqli_insert_id($db);
 
 				//upload any attachments that have been added with the refund
-				uploadFiles();
+				uploadFiles($last_id);
 				
 
 				//send notification that a new refund has been created: call mail_presets
@@ -46,20 +48,12 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 
 				$query = "SELECT username FROM users WHERE user_id='{$_SESSION['userid']}'";
 				$result = mysqli_query($db,$query);
-				
-				//echo 'the query is <br>';
-				//echo $query;
-				//echo '<br>';
-				
-				//var_dump($result);
+
 				
 				$rowUserNames=mysqli_fetch_array($result);
 				//dynamically build the to address from the username selected based on the recipients specified by the step in the process
 				$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
 				
-				//echo 'the to value  is <br>';
-				//echo $to;
-				//echo '<br>';
 				
 				if($_POST['urgent']){ //verify that this works as intended
 				
@@ -136,12 +130,15 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
 							
 			} else {
+
 				showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund());
 			}
 			
 			//if errors exist, show page again & fill in values
 		
 		} else { //form has not been submitted
+
+		
 			showPage($_SESSION['username'],$_SESSION['access']); //show page if user is logged in
 		}
 		
@@ -163,152 +160,63 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 }
 
 
-function uploadFiles(){
+function uploadFiles($refundID_just_created){
 	
-	/*
-		array (size=17)
-		'amount' => string '321' (length=3)
-		'payable' => string 'me' (length=2)
-		'addr_ln_1' => string '16 P' (length=4)
-		'addr_ln_2' => string '' (length=0)
-		'city' => string 'Burlington' (length=10)
-		'state' => string 'VT' (length=2)
-		'zip' => string '05401' (length=5)
-		'enc_nbr' => string '123456' (length=6)
-		'purpose' => string 'blah' (length=4)
-		'comments' => string 'blahblah' (length=8)
-		'file1' => string '6_17_notes.txt' (length=14)
-		'file2' => string '' (length=0)
-		'file3' => string '' (length=0)
-		'file4' => string '' (length=0)
-		'file5' => string '' (length=0)
-		'_submit_check' => string '1' (length=1)
-		'Submit' => string 'submit' (length=6)
+	$target_dir = "uploads/".$refundID_just_created."/";
 
-		
-		
-		  'file1' => 
-    array (size=5)
-      'name' => string 'Firstqueries.txt' (length=16)
-      'type' => string 'text/plain' (length=10)
-      'tmp_name' => string 'C:\wamp\tmp\php54CD.tmp' (length=23)
-      'error' => int 0
-      'size' => int 5287
-	  
-	  1.	PDFs
-2.	Word
-3.	Excel
-4.	Txt
-5.	HTML
-6.	JPG/JPEG
-7.	BMP
-8.	PNG
-9.	TIF/TIFF
-
-		
-		
-	*/
-	
-	
-	$target_dir = "uploads/";
 	$target_file="";
 	
-	for($x=1;$x<5;$x++){//build up string of filenames
-		
-		$fileBaseName="file";
-		$fileBaseName.=(string)$x;
-		
-		//echo $fileBaseName;
-		//echo '<br>';
-		
-		
-	
-			$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
-			
-			//echo 'the targeted filename is ';
-			//echo $target_file;
-			
-			
-			//die();
-			
-			$uploadOk = 1;
-			$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-	
-			/*
-			echo '<br> the image file type is: <br>';
-			echo $imageFileType;
-			echo '<br>';
-			
-			echo $_POST["submit"];
-			echo 'that was post submit <br>';
-
-			echo 'the size is <br>';
-			echo $_FILES[$fileBaseName]["size"];
-			
-			echo '<br>';
-			*/
-			
-					
-			/**/
-
-			/*  was applicable previously, but current requirements allow uploading of both images and txt
-			// Check if image file is a actual image or fake image
-			if(isset($_FILES[$fileBaseName]["size"]) && $_FILES[$fileBaseName]["size"]>0 ) {
-
-				$check = getimagesize($_FILES[$fileBaseName]["tmp_name"]);
+	if (!mkdir($target_dir, 0777, true)) {
+			die('There was an error creating the folder in which to upload your documents.  Please make sure you have read write permissions on the 
+			machine you are using.  If the error persists, please contact your local network administrator.');
+		}else{
+			for($x=1;$x<5;$x++){//build up string of filenames
 				
-				echo 'check is <br>';
-				echo $check;
-
-				if($check !== false) {
-					echo "File is an image - " . $check["mime"] . ".";
+				$fileBaseName="file";
+				$fileBaseName.=(string)$x;
+				
+					$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+					
 					$uploadOk = 1;
-				} else {
-					echo "File is not an image.";
-					$uploadOk = 0;
-				}
-			}
-			
-			*/
-			
-			
-			// Check if file already exists
-			if (file_exists($target_file)) {
-				//echo "Sorry, file already exists. <br>";
-				$uploadOk = 0;
-			}
-			// Check file size
-			if ($_FILES[$fileBaseName]["size"] > 500000) {
-				//echo "Sorry, your file is too large. <br>";
-				$uploadOk = 0;
-			}
+					$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
 
-
-			// Allow certain file formats
-			if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-			&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
-			&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff") {
-				//echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, BMP and tif/tiff file types are allowed. <br>";
-				$uploadOk = 0;
-			}
-			// Check if $uploadOk is set to 0 by an error
-			if ($uploadOk == 0) {
-				//echo "Sorry, your file was not uploaded.";
-				// if everything is ok, try to upload file
-			} else {
-					if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
-						//echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
-					} else {
-						//echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
-						 print_r( error_get_last() );
+					
+					// Check if file already exists
+					if (file_exists($target_file)) {
+						echo "Sorry, file already exists. <br>";
+						$uploadOk = 0;
 					}
-				}		
+					// Check file size
+					if ($_FILES[$fileBaseName]["size"] > 500000) {
+						echo "Sorry, your file is too large. <br>";
+						$uploadOk = 0;
+					}
 
 
-	
+					// Allow certain file formats
+					if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+					&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
+					&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx") {
+						echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, BMP and tif/tiff file types are allowed. <br>";
+						$uploadOk = 0;
+					}
+					// Check if $uploadOk is set to 0 by an error
+					if ($uploadOk == 0) {
+						echo "Sorry, your file was not uploaded.";
+						// if everything is ok, try to upload file
+					} else {
+							if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
+								echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
+							} else {
+								echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
+								 print_r( error_get_last() );
+							}
+						}		
+
+
+			}
 	
 	}
-	
 }
 	
 	
@@ -462,25 +370,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	$array_of_statesFull= array('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming');
 
 	$array_of_statesShort=array("AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY");
-	//echo 'the array of states size is <br>';
-	
-	//var_dump($array_of_statesFull);
-	
-	//die();
-	
-	//echo $array_of_statesFull.size();
 
-			/*
-			while($days_ctr<=365){
-
-				print "<option value=\"{$days_ctr}\"";
-				print ">{$days_ctr}</option>";	
-
-				$days_ctr++;
-
-			}
-			*/
-			
 	
 
 	if (isset($_POST['amount'])){
@@ -727,5 +617,49 @@ ADDREFUNDPAGE;
 
 }
 
+
+	/*
+		array (size=17)
+		'amount' => string '321' (length=3)
+		'payable' => string 'me' (length=2)
+		'addr_ln_1' => string '16 P' (length=4)
+		'addr_ln_2' => string '' (length=0)
+		'city' => string 'Burlington' (length=10)
+		'state' => string 'VT' (length=2)
+		'zip' => string '05401' (length=5)
+		'enc_nbr' => string '123456' (length=6)
+		'purpose' => string 'blah' (length=4)
+		'comments' => string 'blahblah' (length=8)
+		'file1' => string '6_17_notes.txt' (length=14)
+		'file2' => string '' (length=0)
+		'file3' => string '' (length=0)
+		'file4' => string '' (length=0)
+		'file5' => string '' (length=0)
+		'_submit_check' => string '1' (length=1)
+		'Submit' => string 'submit' (length=6)
+
+		
+		
+		  'file1' => 
+    array (size=5)
+      'name' => string 'Firstqueries.txt' (length=16)
+      'type' => string 'text/plain' (length=10)
+      'tmp_name' => string 'C:\wamp\tmp\php54CD.tmp' (length=23)
+      'error' => int 0
+      'size' => int 5287
+	  
+	  1.	PDFs
+2.	Word
+3.	Excel
+4.	Txt
+5.	HTML
+6.	JPG/JPEG
+7.	BMP
+8.	PNG
+9.	TIF/TIFF
+
+		
+		
+	*/
 
 ?>
