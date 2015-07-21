@@ -11,8 +11,7 @@ require('lib\refundFunctions.php');
 
 //include 'lib\functions.php';
 
-include 'connectToDB.php'; 
-//include 'validateLogin.php';   
+include 'connectToDB.php';  
 
 if (array_key_exists('userid', $_SESSION)){	//If user is logged in show page
 	showReportsPage($_SESSION['username'],$_SESSION['access']);

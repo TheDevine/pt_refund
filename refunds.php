@@ -20,7 +20,31 @@ include 'connectToDB.php';
 //include 'validateLogin.php';   //uncomment this to show the first edit screen
 //require_once "Mail.php"; (File doesn't exist)
 
-//include 'dump_all_page_contents.php'; 
+include 'dump_all_page_contents.php'; 
+
+
+if (array_key_exists('userid', $_SESSION)){	//If user is logged in show page
+
+
+		if (sizeof($_REQUEST)==0 || isset($_GET['page_number'])){
+			//echo 'coming here each time';
+			showPage($_SESSION['username'],$_SESSION['access']); //so index page wont duplicate content under content when selections are made
+		}
+
+
+} elseif(isset($_POST['username']) && $_POST['username']!=NULL && $_POST['username']!="" ) { //if user has attempted to login, validate login
+   
+	if(validateLogin($_POST['username'],$_POST['password'])){
+		showPage($_SESSION['username'], $_SESSION['access']);	
+	} else {
+		showLogin('Login invalid. Please try again');	
+	}
+	
+} else { //Else show login screen
+	 //echo 'Hello ET';
+	 showLogin(); 
+
+}
 
 
 if(isset($_GET)){
@@ -487,7 +511,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 			//TRACK CHANGES
 				$status_before=$rowquery_status['status'];
 				$status_after='VOIDED';
-				trackRefundChanges($_POST,$status_before,$status_after);		
+				trackRefundChanges($status_before,$status_after);		
 			//TRACK THE CHANGES		
 			
 			if (@mysqli_error($result)){
@@ -586,7 +610,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				//TRACK CHANGES
 					$status_before=$rowquery_status['status'];
 					$status_after='REJECTED';
-					trackRefundChanges($_POST,$status_before,$status_after);		
+					trackRefundChanges($status_before,$status_after);		
 				//TRACK THE CHANGES		
 				
 

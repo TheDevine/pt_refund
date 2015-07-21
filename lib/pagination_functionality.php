@@ -125,14 +125,8 @@ function instantiate_page_variables($row,&$tempOrigStartPosition,&$page,&$URL_St
 
 function displayPagination($tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD){
 
-/*
-echo $tempOrigStartPosition;
-echo '<br>';
-echo $URL_String_BACK;
-echo '<br>';
-echo $URL_String_FORWARD;
-echo '<br>';
-*/
+
+
 
 			print <<<EDITUSERPAGE
 
@@ -184,6 +178,7 @@ echo 'hello';
   </table>
 EDITUSERPAGE;
 */
+echo 'temp orig start pos : ';
 echo $tempOrigStartPosition;
 echo '<br>';
 echo $URL_String_BACK;

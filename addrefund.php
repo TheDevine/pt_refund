@@ -14,6 +14,61 @@ $db = mysqli_connect('localhost','ptrefund','x22m3y2k','pt_refund'); //connect t
 //include 'lib\refundFunctions.php';
 include 'connectToDB.php'; 
 
+?>
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>jQuery </title>
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		
+				$(document).ready(function() {
+		var max_fields      = 10; //maximum input boxes allowed
+		var wrapper         = $(".input_fields_wrap"); //Fields wrapper
+		var add_button      = $(".add_field_button"); //Add button ID
+
+		
+		
+		var x = 1; //initlal text box count
+		$(add_button).click(function(e){ //on add input button click
+		
+		alert('test');
+		e.preventDefault();
+		if(x < max_fields){ //max input box allowed
+			x++; //text box increment
+			$(wrapper).append('<tr><td></td><td><input type="text" name="mytext[]"/><a href="#" class="remove_field">Remove</a></td></tr>'); //add input box
+		}
+		});
+
+		$(wrapper).on("click",".remove_field", function(e){ //user click on remove text
+		e.preventDefault(); $(this).parent('div').remove(); x--;
+		})
+		});
+
+		
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+		
+	<?php
+
+
+
 
 if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for access level 
 	if($_SESSION['access']=='S' OR $_SESSION['access']=='U' OR $_SESSION['access']=='A'){
@@ -130,6 +185,9 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
 							
 			} else {
+				
+				//echo 'going to the else';
+				//die();
 
 				showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund());
 			}
@@ -166,55 +224,59 @@ function uploadFiles($refundID_just_created){
 
 	$target_file="";
 	
-	if (!mkdir($target_dir, 0777, true)) {
-			die('There was an error creating the folder in which to upload your documents.  Please make sure you have read write permissions on the 
-			machine you are using.  If the error persists, please contact your local network administrator.');
-		}else{
-			for($x=1;$x<5;$x++){//build up string of filenames
-				
-				$fileBaseName="file";
-				$fileBaseName.=(string)$x;
-				
-					$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+	if (!file_exists($target_dir )) { //so we don't make the folder for each of the uploads
+		
+		if (!mkdir($target_dir, 0777, true)) {
+				die('There was an error creating the folder in which to upload your documents.  Please make sure you have read write permissions on the 
+				machine you are using.  If the error persists, please contact your local network administrator.');
+			}else{
+				for($x=1;$x<5;$x++){//build up string of filenames
 					
-					$uploadOk = 1;
-					$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-
+					$fileBaseName="file";
+					$fileBaseName.=(string)$x;
 					
-					// Check if file already exists
-					if (file_exists($target_file)) {
-						echo "Sorry, file already exists. <br>";
-						$uploadOk = 0;
-					}
-					// Check file size
-					if ($_FILES[$fileBaseName]["size"] > 500000) {
-						echo "Sorry, your file is too large. <br>";
-						$uploadOk = 0;
-					}
+						$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+						
+						$uploadOk = 1;
+						$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+						
+						// Check if file already exists
+						if (file_exists($target_file)) {
+							echo "Sorry, file already exists. <br>";
+							$uploadOk = 0;
+						}
+						// Check file size
+						if ($_FILES[$fileBaseName]["size"] > 500000) {
+							echo "Sorry, your file is too large. <br>";
+							$uploadOk = 0;
+						}
 
 
-					// Allow certain file formats
-					if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-					&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
-					&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx") {
-						echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, BMP and tif/tiff file types are allowed. <br>";
-						$uploadOk = 0;
-					}
-					// Check if $uploadOk is set to 0 by an error
-					if ($uploadOk == 0) {
-						echo "Sorry, your file was not uploaded.";
-						// if everything is ok, try to upload file
-					} else {
-							if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
-								echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
-							} else {
-								echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
-								 print_r( error_get_last() );
-							}
-						}		
+						// Allow certain file formats
+						if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+						&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
+						&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
+							echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
+							$uploadOk = 0;
+						}
+						// Check if $uploadOk is set to 0 by an error
+						if ($uploadOk == 0) {
+							echo "Sorry, your file was not uploaded.";
+							// if everything is ok, try to upload file
+						} else {
+								if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
+									echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
+								} else {
+									echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
+									 print_r( error_get_last() );
+								}
+							}		
 
 
-			}
+				}
+
+		}
 	
 	}
 }
@@ -358,7 +420,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 	include 'dropDownListValues.php';
 
-
+	/* commented out for debugging
 	if($errors){
 		//show errors at top of page
 		print '<h2 class = "error"> The following errors were encountered:</h2>';
@@ -366,21 +428,25 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 		print implode('</li><li>', $errors);
 		print '</li></ul>';
 	}
+	*/
 	
 	$array_of_statesFull= array('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming');
 
 	$array_of_statesShort=array("AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY");
 
-	
+
 
 	if (isset($_POST['amount'])){
-		
+
 	print <<<ADDREFUNDPAGE
+
+
 		<h2 align="center">Add a New Refund</h2>
 		<a href="index.php">Back to Refunds</a>
 	<br/><br/>
-	
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="add_refund" enctype="multipart/form-data">
+		<button class="add_field_button">Add More Fields</button>
+
       <table style="width: 100%" border="1">
         <tbody>
           <tr>
@@ -413,8 +479,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
             <td><input  name="city" type="text" value="{$_POST['city']}">
             </td>
 			
-			
-			
+		
           <tr>
             <td>State</td>
             <td>
@@ -446,13 +511,29 @@ ADDREFUNDPAGE;
             <td><input  maxlength="10" name="zip" type="text" value="{$_POST['zip']}">
             </td>
           </tr>
- <tr><td> Encounter Number: </td>
-		  
+ 
+ <tr>
+ <div class="input_fields_wrap">
+ <tr>
+ 
+ <td> Encounter Number: </td>
+		 
+
+ <td><input name="mytext[]" type="text" value=""></td>
+ 
+ </tr>
+ </div>
+ </tr>
+
+  
 ADDREFUNDPAGE;
 
+//<tr><td></td><td><input type="text" name="mytext[]"/><a href="#" class="remove_field">Remove</a></td></tr>
+
+	
 print <<<ADDREFUNDPAGE
 
-	  </tr>
+
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" value="{$_POST['purpose']}">
@@ -495,9 +576,22 @@ ADDREFUNDPAGE;
 		<h2 align="center">Add a New Refund</h2>
 			<a href="index.php">Back to Refunds</a>
 	<br/><br/>
+
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="add_refund" enctype="multipart/form-data">
+		<button class="add_field_button">Add MAS Fields</button>
+
       <table style="width: 100%" border="1">
         <tbody>
+		<html>
+		<head>
+		</head>
+		<body>
+		<tr>
+		<div class="input_fields_wrap">
+			<tr><td></td><td><div><input type="text" name="mytext[]"></div></td></tr>
+		</div>
+		</tr>
+		</body>
           <tr>
             <td>Urgent</td>
             <td><input maxlength="50" name="urgent" type="checkbox" value ="1"><br>
@@ -562,19 +656,23 @@ ADDREFUNDPAGE;
             </td>
           </tr>
 		  
- <tr><td> Encounter Number: </td>
-		  
 
-            <td><input name="enc_nbr" type="text" value="">
-           
-
+		<tr>
+		<div class="input_fields_wrap">	
+				<tr>
+		<td> Encounter Number: </td>
+		<td><input name="mytext[]" type="text" value=""></td>
+				</tr>
+		</div>
+		</tr>
+		
 
 ADDREFUNDPAGE;
 
+
+
 print <<<ADDREFUNDPAGE
 
-		</td>
-	  </tr>
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" value="">
@@ -611,7 +709,10 @@ print <<<ADDREFUNDPAGE
 	  <br/>
       <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="submit" name="Submit">Request Refund</button></form>
 ADDREFUNDPAGE;
-		
+
+?>
+
+<?php		
 	}
 	showFooter();
 

@@ -377,19 +377,7 @@ if($_POST['refund_search_term']=="Names"){
 		$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
 	}
 	
-	/*
-	
-	if($interval->days>30 && $row['status']!="COMPLETED"){
-		print '<tr bgcolor=#FF0000>';
-	}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
-		print '<tr bgcolor=yellow>';
-	}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
-		print '<tr bgcolor=#009900>';
-	}else{
-		print '<tr>';
-	}
-	
-	*/
+
 	
 	if($row['urgent']){
 			print '<tr bgcolor=#EE0000 height=50>';
@@ -446,6 +434,7 @@ EDITUSERPAGE;
 		
 		echo '<br>';
 		echo '<br>';
+		
 		//if(!isset($_GET['status_order'])){
 		print <<<EDITUSERPAGE
 		<center><a href="unset_search.php"><button value="Back" name="Back">Back To Search Page</button></a></center>
@@ -834,6 +823,7 @@ EDITUSERPAGE;
 
 	echo '<br>';
 	echo '<br>';
+	echo 'booo';
 	print <<<EDITUSERPAGE
 	<center><a href="unset_search.php"><button value="Back" name="Back">Back To Search Page</button></a></center>
 EDITUSERPAGE;
@@ -1035,14 +1025,12 @@ EDITUSERPAGE;
 
 		instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
 
-
 		}			
-
 
 if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
 
 	//if()
-	displayPagination($tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+	displayPagination($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
 
 }
 

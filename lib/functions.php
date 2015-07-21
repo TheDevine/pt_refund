@@ -392,13 +392,13 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 	$specifier="";
 	if(strtoupper($rowquery_dept_name[0])=='PAR2'){
-		$specifier= " AND status='NEW' OR status='PAR2 Initial' ";
+		$specifier= " status='NEW' OR status='PAR2 Initial' ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='ACCOUNTING'){
-		$specifier= " AND status= 'ACCOUNTING APPROVAL' ";
+		$specifier= " status= 'ACCOUNTING APPROVAL' ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='PAR1'){
-		$specifier= " AND status= 'ACCOUNTING APPROVED' ";
+		$specifier= " status= 'ACCOUNTING APPROVED' ";
 	}else{ //because currently isnt reflective of new dept status structure
-		$specifier= " AND status='NEW' OR status='PAR2 Initial' ";
+		$specifier= " status='NEW' OR status='PAR2 Initial' ";
 
 	}		
 	
@@ -414,7 +414,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			INNER JOIN 
 			users AS U 
 			ON R.assigned_to = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED'".$specifier."
+			WHERE ".$specifier."
 			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		
 		}else{
@@ -423,7 +423,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			INNER JOIN 
 			users AS U 
 			ON R.assigned_to = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED'".$specifier."
+			WHERE ".$specifier."
 			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}
 
@@ -437,7 +437,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			INNER JOIN 
 			users AS U 
 			ON R.assigned_to = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED'".$specifier."
+			WHERE ".$specifier."
 			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}else{
 			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id,payable,accounting_approval,billing_initial_approval,billing_final_approval,urgent
@@ -445,7 +445,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			INNER JOIN 
 			users AS U 
 			ON R.assigned_to = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED'".$specifier."
+			WHERE ".$specifier."
 			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 
 		}
@@ -456,7 +456,11 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	$row = @mysqli_fetch_array($result);
 	$sizeOfResultSet=sizeof($row);	
 	
-
+	/*
+	echo 'the query was ';
+	echo $query ;
+	echo '<br>';
+	*/
 	if($sizeOfResultSet){
 		
 
@@ -518,18 +522,24 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 				<td>'.$row['status'].'</td>';
 				print	'</tr>';
 				
-				instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+			
 				
 		}
-
+		
+		
+		instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
 	}	
 	
 	print '</table></div>';
+
 	
-	if ($numResultRows>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
-		
+	
+	if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
+
 		displayPaginationINDEX($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+
 	}
+
 	
 }else{
 	//print message saying they have no refunds to are

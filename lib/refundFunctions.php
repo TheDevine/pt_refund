@@ -10,6 +10,55 @@
 	
 	}
 	*/
+	
+?>
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>Adding Multiple Fields</title>
+
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		
+		$(document).ready(function() {
+		var max_fields      = 10; //maximum input boxes allowed
+		var wrapper         = $(".input_fields_wrap"); //Fields wrapper
+		var add_button      = $(".add_field_button"); //Add button ID
+
+		
+		
+		var x = 1; //initlal text box count
+		$(add_button).click(function(e){ //on add input button click
+		e.preventDefault();
+		if(x < max_fields){ //max input box allowed
+			x++; //text box increment
+			$(wrapper).append('<tr><td></td><td><input type="text" name="mytext[]"/><a href="#" class="remove_field">Remove</a></td></tr>'); //add input box
+		}
+		});
+
+		$(wrapper).on("click",".remove_field", function(e){ //user click on remove text
+		e.preventDefault(); $(this).parent('div').remove(); x--;
+		})
+		});
+
+
+		
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+		
+	<?php
+	
 
 
 if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
@@ -17,6 +66,9 @@ if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 				
 		//	echo 'refund functions top';
 		//die();
+		
+		echo 'reloaded to here';
+		die();
 			
 	if($_GET['report_id']==0){
 		reportAll();
@@ -855,6 +907,8 @@ EDITUSERPAGE;
             <td><input  maxlength="10" name="zip" type="text" value="{$row['zip']}">
             </td>
           </tr>
+		  
+
           <tr>
             <td>Encounter Number</td>
             <td><input name="enc_nbr" type="text" value="{$row['NG_enc_id']}">
@@ -1964,7 +2018,7 @@ function approveTheRefund(){
 							$status_before='ACCOUNTING APPROVAL';
 							$status_after='ACCOUNTING APPROVED';
 							
-							trackRefundChanges($_POST,$status_before,$status_after);				
+							trackRefundChanges($status_before,$status_after);				
 							//$queryStatusChange = "INSERT INTO refund_changes (refund_id, status_before, status_after, date, name) VALUES ('{$_POST['refund_id']}','ACCOUNTING APPROVAL','ACCOUNTING APPROVED','{$now}','{$_SESSION['userid']}'";
 							//$result = mysqli_query($db,$queryStatusChange);
 						}
@@ -2111,7 +2165,7 @@ function approveTheRefund(){
 							$status_before=$status;
 							$status_after='ACCOUNTING APPROVAL';
 							
-							trackRefundChanges($_POST,$status_before,$status_after);		
+							trackRefundChanges($status_before,$status_after);		
 					
 						//TRACK THE CHANGES
 
@@ -2267,7 +2321,7 @@ function approveTheRefund(){
 						//TRACK CHANGES
 							$status_before=$status;
 							$status_after='BILLING APPROVED';
-							trackRefundChanges($_POST,$status_before,$status_after);		
+							trackRefundChanges($status_before,$status_after);		
 						//TRACK THE CHANGES						
 						
 							//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
@@ -2344,7 +2398,7 @@ function approveTheRefund(){
 						//TRACK CHANGES
 							$status_before=$status;
 							$status_after='COMPLETED';
-							trackRefundChanges($_POST,$status_before,$status_after);		
+							trackRefundChanges($status_before,$status_after);		
 						//TRACK THE CHANGES		
 
 						//SEND OFF THE APPROPRIATE NOTIFICATION EMAILS
@@ -4977,7 +5031,7 @@ function sendEmailBillingInitialApproved(){
 	
 }
 
-function trackRefundChanges($_POST,$status_before,$status_after){
+function trackRefundChanges($status_before,$status_after){
 	$now = date("Y-m-d H:i:s");	
 	$queryStatusChange = "INSERT INTO refund_changes (refund_id, status_before, status_after, date, name) VALUES ('{$_POST['refund_id']}','{$status_before}','{$status_after}','{$now}','{$_SESSION['userid']}'";
 	$result = mysqli_query($db,$queryStatusChange);

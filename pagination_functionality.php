@@ -59,18 +59,7 @@ function instantiate_initialOffset(){
 
 function instantiate_page_variables($row,&$tempOrigStartPosition,&$page,&$URL_String_BACK,&$URL_String_FORWARD){
 
-	/*
-	echo 'TOP of instantiate_page_variables <br>';
-	echo '$row is '.$row.'<br>';
-	var_dump($row);
-	
-	echo '$row is '.$_SESSION.'<br>';
-	var_dump($_SESSION);
-	
-	*/
-	
-//die();
-//die();
+
 		if (sizeof($row)>$_SESSION['RowsPerPage']){
 
 			if(isset($_GET['page_number']) && $_GET['page_number']>0){
@@ -91,18 +80,19 @@ function instantiate_page_variables($row,&$tempOrigStartPosition,&$page,&$URL_St
 				$URL_String_BACK=$theOrigURL;
 				
 				$URL_String_BACK .="?page_number=".$page;
-
+		
 			}
 			echo '&nbsp;&nbsp;&nbsp;&nbsp;';	
 			
-				$page=++$tempOrigStartPosition;		
+				$page=++$tempOrigStartPosition;		//1
 				
-				--$tempOrigStartPosition;
+				--$tempOrigStartPosition; //0
 				$URL_String_FORWARD=$_SERVER['HTTP_REFERER'];
 
 				$theOrigURL=substr($URL_String,0,strpos($URL_String_FORWARD,'?'));
 				$URL_String_FORWARD=$theOrigURL;
 				$URL_String_FORWARD .="?page_number=".$page;
+		
 
 		}
 		
@@ -198,6 +188,7 @@ EDITUSERPAGE;
 
 function displayPagination($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD){
 
+
 	$newOffSet=0;
 	
 	if ($_GET['page_number']>=1){
@@ -251,6 +242,8 @@ function displayPaginationReports($row,$tempOrigStartPosition,$URL_String_BACK,$
 
 
 			$newOffSet=0;
+			
+			include 'dump_all_page_contents.php';
 
 			if ($_GET['page_number']>=1){
 
