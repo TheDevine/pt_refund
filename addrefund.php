@@ -33,27 +33,39 @@ include 'connectToDB.php';
 		$( "#datepickerEND" ).datepicker();
 		});
 		
-				$(document).ready(function() {
-		var max_fields      = 10; //maximum input boxes allowed
-		var wrapper         = $(".input_fields_wrap"); //Fields wrapper
-		var add_button      = $(".add_field_button"); //Add button ID
+		$(document).ready(function() {
+				
 
+			var wrapper         = $(".input_fields_wrap"); //Fields wrapper
+			var add_button      = $(".add_field_button"); //Add button ID
+			var x = 1; //initial text box count
 		
-		
-		var x = 1; //initlal text box count
-		$(add_button).click(function(e){ //on add input button click
-		
-		alert('test');
-		e.preventDefault();
-		if(x < max_fields){ //max input box allowed
-			x++; //text box increment
-			$(wrapper).append('<tr><td></td><td><input type="text" name="mytext[]"/><a href="#" class="remove_field">Remove</a></td></tr>'); //add input box
-		}
-		});
+			$(add_button).click(function(e){ //on add input button click
+			
+				var display=x+1; //for alert box purposes
+				//alert('Please enter the additional Encounter Number associated with this refund in the new Encounter Field: Encounter Number '+display);
+				alert('Please enter the additional Encounter Number associated with this refund in the new Encounter Field. ');
 
-		$(wrapper).on("click",".remove_field", function(e){ //user click on remove text
-		e.preventDefault(); $(this).parent('div').remove(); x--;
-		})
+				e.preventDefault();
+				
+				//Add the row, increment the counter
+				x++; //text box increment
+				$(wrapper).append('<tr id='+x+'><td>Additonal Encounter Number: </td><td><input type="text" name="encounters[]"/><a href="#" class="remove_field" id='+x+'>Remove</a></td></tr>'); //add input box
+				//$(wrapper).append('<tr id='+x+'><td>Encounter Number: '+x+'</td><td><input type="text" name="encounters[]"/><a href="#" class="remove_field" id='+x+'>Remove</a></td></tr>'); //add input box
+
+			});
+
+			$(wrapper).on("click",".remove_field", function(e){ //user click on remove text
+				
+				alert('Encounter has been removed!');
+				//alert('This will remove Encounter Field Number '+$(this).parents('tr').contents());
+				//Remove the row, decrement the counter
+				e.preventDefault(); $(this).parents('tr').remove(); 
+				
+				//x--;
+	
+				})
+				
 		});
 
 		
@@ -78,24 +90,50 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 		
 			if(validateNewRefund()=='valid') //if no errors, create user in db and show success message
 			{
-				//create user in db
-				
+		
 				if(!isset($_POST['urgent'])){
 					$_POST['urgent']=0;
 				}
+				
+				//echo 'ive reached the DB insert <br>';
+				//include 'dump_all_page_contents.php';
+		
+				//create user in db
 				$now = date("Y-m-d H:i:s");	
+				
+
 				$query = "INSERT INTO refund (NG_enc_id, created_by, dt_request, urgent, amount, payable, 
 				addr_ln_1,addr_ln_2,city,state,zip,purpose,status,comments,assigned_to) 
-				VALUES ('{$_POST['enc_nbr']}','{$_SESSION['userid']}','{$now}',{$_POST['urgent']},
+				VALUES ('{$_POST['encounters'][0]}','{$_SESSION['userid']}','{$now}',{$_POST['urgent']},
 				'{$_POST['amount']}','{$_POST['payable']}','{$_POST['addr_ln_1']}','{$_POST['addr_ln_2']}',
 				'{$_POST['city']}','{$_POST['state']}','{$_POST['zip']}','{$_POST['purpose']}','NEW','{$_POST['comments']}','{$_SESSION['userid']}')";
 				$result = mysqli_query($db,$query);
-				
 				$last_id = mysqli_insert_id($db);
-
+				
 				//upload any attachments that have been added with the refund
 				uploadFiles($last_id);
 				
+
+				if(sizeof($_POST['encounters'])>1){
+
+					foreach($_POST['encounters'] as $key => $value){
+						
+						if(strlen($value)>0){ //if there was actually a number entered into the encounter field
+
+							$queryManyEncounters = "INSERT INTO 
+							refund_manyEncounters 
+							(Encounter_ID, refund_ID) 
+							VALUES ('{$value}','{$last_id}')";
+							
+							$result = mysqli_query($db,$queryManyEncounters);
+	
+						}
+				
+					}
+				
+				}
+				
+				//die();
 
 				//send notification that a new refund has been created: call mail_presets
 				//RULE: ON Creation:
@@ -186,6 +224,10 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 							
 			} else {
 				
+				echo 'the refund was not validated <br>';
+				include 'dump_all_page_contents.php';
+
+				die();
 				//echo 'going to the else';
 				//die();
 
@@ -316,13 +358,17 @@ function validateNewRefund (){
 		$errors[]='Zip code must be at least 5 characters long';	
 	}
 
+	/*
 	if (strlen($_POST['enc_nbr'])<3){
 		$errors[]='Encounter numbers must be at least 3 characters long';	
 	}
+	*/
 
 	if (strlen($_POST['purpose'])<3){
 		$errors[]='Purpose cannot be blank';	
 	}
+	
+	//var_dump($errors);
 
 	if($errors) {
 		return $errors;
@@ -478,8 +524,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
             <td>City</td>
             <td><input  name="city" type="text" value="{$_POST['city']}">
             </td>
-			
-		
+
           <tr>
             <td>State</td>
             <td>
@@ -511,24 +556,10 @@ ADDREFUNDPAGE;
             <td><input  maxlength="10" name="zip" type="text" value="{$_POST['zip']}">
             </td>
           </tr>
- 
- <tr>
- <div class="input_fields_wrap">
- <tr>
- 
- <td> Encounter Number: </td>
-		 
-
- <td><input name="mytext[]" type="text" value=""></td>
- 
- </tr>
- </div>
- </tr>
 
   
 ADDREFUNDPAGE;
 
-//<tr><td></td><td><input type="text" name="mytext[]"/><a href="#" class="remove_field">Remove</a></td></tr>
 
 	
 print <<<ADDREFUNDPAGE
@@ -577,21 +608,14 @@ ADDREFUNDPAGE;
 			<a href="index.php">Back to Refunds</a>
 	<br/><br/>
 
-		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="add_refund" enctype="multipart/form-data">
-		<button class="add_field_button">Add MAS Fields</button>
-
-      <table style="width: 100%" border="1">
+		
+		
+		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="add_refund" enctype="multipart/form-data" >
+	
+      <table style="width: 100%" border="1" class="input_fields_wrap">
+	
         <tbody>
-		<html>
-		<head>
-		</head>
-		<body>
-		<tr>
-		<div class="input_fields_wrap">
-			<tr><td></td><td><div><input type="text" name="mytext[]"></div></td></tr>
-		</div>
-		</tr>
-		</body>
+
           <tr>
             <td>Urgent</td>
             <td><input maxlength="50" name="urgent" type="checkbox" value ="1"><br>
@@ -655,17 +679,6 @@ ADDREFUNDPAGE;
             <td><input  maxlength="10" name="zip" type="text" value="">
             </td>
           </tr>
-		  
-
-		<tr>
-		<div class="input_fields_wrap">	
-				<tr>
-		<td> Encounter Number: </td>
-		<td><input name="mytext[]" type="text" value=""></td>
-				</tr>
-		</div>
-		</tr>
-		
 
 ADDREFUNDPAGE;
 
@@ -703,11 +716,22 @@ print <<<ADDREFUNDPAGE
           	<td>Attachment 5</td>
           	<td><input type="file" name="file5"></td>
           </tr>
+		  <tr>
+
+			<tr>
+				<td> Encounter Number: </td>
+				<td><input name="encounters[]" type="text" value=""></td>
+			</tr>
+		
+	  </tr>
+		  
         </tbody>
-      </table>
+      </table><br>
+	  <button class="add_field_button">Add Additional Encounter Numbers associated with this Refund</button><br><br>
+
       <input type="hidden" name="_submit_check" value="1" />
-	  <br/>
-      <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="submit" name="Submit">Request Refund</button></form>
+	  <br/><br>
+     <center><button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="submit" name="Submit">Request Refund</button></center></form>
 ADDREFUNDPAGE;
 
 ?>

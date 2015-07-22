@@ -101,41 +101,55 @@ if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 elseif(isset($_POST)){
 	
 
+
 	if(isset($_POST['_assign_submit']) && $_POST['_assign_submit']!="" && $_POST['_assign_submit']!=NULL){ 
+
 		showAssignPage(); 
+		die();
 	}
 	elseif(isset($_POST['_del_submit']) && $_POST['_del_submit']!="" && $_POST['_del_submit']!=NULL){ 
+
 		showDelPage(); //this function doesn't seem to exist yet.
+		die();
 	}
 	elseif(isset($_POST['_del_submit_execute']) && $_POST['_del_submit_execute']!="" && $_POST['_del_submit_execute']!=NULL){ 
-	
-		execute_the_delete();
 
+		execute_the_delete();
+		die();
 	}
 	elseif(isset($_POST['_void_submit']) && $_POST['_void_submit']!="" && $_POST['_void_submit']!=NULL){ 
-		
+
 		showVoidPage(); //this function doesn't seem to exist yet.
+		die();
 	}elseif(isset($_POST['_void_submit_execute']) && $_POST['_void_submit_execute']!="" && $_POST['_void_submit_execute']!=NULL){ 
 
 		execute_the_void();
-
+		die();
 	}
 	elseif(isset($_POST['_rej_submit']) && $_POST['_rej_submit']!="" && $_POST['_rej_submit']!=NULL){ 
-		//echo 'on refund functions page ';
-		//die();
-		//echo 'am i coming here';
-		//die();
+
 		showRejPage(); //this function doesn't seem to exist yet.
+		die();
 	}elseif(isset($_POST['_reject_submit']) && $_POST['_reject_submit']!="" && $_POST['_reject_submit']!=NULL){ 
-		
+			
 		execute_the_reject();
+		die();
 	}
 
 	elseif(isset($_POST['_app_submit']) && $_POST['_app_submit']!="" && $_POST['_app_submit']!=NULL){ 
-	//echo 'i AM coming in here';
-		//die();
+
 		showApprovePage(); //this function doesn't seem to exist yet
+		die();
 	}
+	
+	elseif(isset($_POST['_approve_submit']) && $_POST['_approve_submit']!="" && $_POST['_approve_submit']!=NULL){ 
+
+		executeTheApprove(); //this function doesn't seem to exist yet
+		die();
+	}
+	
+	
+	
 	
 }
 
@@ -498,7 +512,7 @@ HEADER;
 
 		//<td><a href=\"index.php\" class = \"button\">Refunds</a></td>
 		print "<td><a href=\"reports.php\"  class = \"button\" id = \"selected\">Reports</a></td>
-		<td><a href=\"search_landing.php\"  class = \"button\" onclick= \" {reset_SAVE_POST();} \">Search</a></td>		
+		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>	
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
 	if ($accessLvl == 'S'){
 		print '<td><a href="admin.php" class = "button" >Admin</a></td></tr></table>';	
@@ -508,7 +522,7 @@ HEADER;
 		
 	}
 
-
+//		<td><a href=\"search_landing.php\"  class = \"button\" onclick= \" {reset_SAVE_POST();} \">Search</a></td>		
 }
 
 
@@ -798,6 +812,10 @@ EDITUSERPAGE;
 	$result_deptName = mysqli_query($db,$query_dept); 
 	$dept_rowName = mysqli_fetch_array($result_deptName);
 	
+	//echo 'the department row name is <br>';
+	//echo $dept_rowName['name'];
+	
+	
 	if ($dept_rowName['name']=="Accounting"){
 	
 		if(isset($_GET['refund_id'])){
@@ -810,7 +828,7 @@ EDITUSERPAGE;
 			addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments, assigned_to,created_by,check_date,check_nbr,refund_id 
 			FROM refund AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_POST['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}
-	}elseif ($dept_rowName['name']=="Billing"){
+	}elseif ($dept_rowName['name']=="Billing" || $dept_rowName['name']=="PAR1" || $dept_rowName['name']=="PAR2"){
 	
 		if(isset($_GET['refund_id'])){
 			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request, status, dt_required, payable, 
@@ -828,11 +846,13 @@ EDITUSERPAGE;
 	echo 'the Query is <br>';
 	echo $query;
 	echo '<br>';
+	
+	echo 'the num of results is ';
+	var_dump($result);
 	*/
 	
 	$result = mysqli_query($db,$query); 
 	$row = mysqli_fetch_array($result);
-	
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	//include 'dump_all_page_contents.php'; 
@@ -850,12 +870,48 @@ EDITUSERPAGE;
 	
 	*/
 	
+	//	$query = "SELECT * FROM refund_manyencounters AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_POST['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];	
+
+	if(isset($_GET['refund_id'])){
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_GET['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+
+
+	}else{
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_POST['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+	}
+	
+	
+	//echo $queryHowManyEncounters ;
+	$arrayOFEncounters=array();
+	$numOfEncountersCtr=0;
+	//$rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters);
+
+	
+	while($rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters)){	
+		//var_dump($rowHowManyEncounters);
+		//if(sizeof($rowHowManyEncounters)>1){
+			foreach($rowHowManyEncounters as $key => $value){
+
+					IF(is_numeric($key) && $numOfEncountersCtr>0){		
+						
+						if(!$key){ //only add to the array if $key is 0 because these hold the encounter ids 
+								   //while pos 1 holds the same repeated refund_id
+							$arrayOFEncounters[$numOfEncountersCtr]=$value;
+						}
+					}
+					$numOfEncountersCtr++;
+				}
+		//}
+	}
+
+	
 	if($row['created_by']==$_SESSION['userid']){ 
 	
-	//echo $_GET['refund_id'];
-	//echo 'that was get refund id ';
-	//echo '<br>';
-	//die();
+
 	print <<<EDITUSERPAGE
 <h2 align="center">Edit Refund</h2>
 <a href="{$_SERVER['HTTP_REFERER'] }">Back</a>
@@ -907,13 +963,31 @@ EDITUSERPAGE;
             <td><input  maxlength="10" name="zip" type="text" value="{$row['zip']}">
             </td>
           </tr>
-		  
-
-          <tr>
+		   <tr>
             <td>Encounter Number</td>
-            <td><input name="enc_nbr" type="text" value="{$row['NG_enc_id']}">
+            <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
+EDITUSERPAGE;
+	
+		if(sizeof($arrayOFEncounters)>1){
+		
+		foreach($arrayOFEncounters as $key => $value){
+			
+				print <<<EDITUSERPAGE
+					<tr>
+						<td>Additional Encounter Number: </td>
+						<td><input name="duplicate_enc_nbr" type="text" readonly value="{$value}">
+						</td>
+					</tr>	
+EDITUSERPAGE;
+				
+			}
+	}
+
+	print <<<EDITUSERPAGE
+		 
+
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" value="{$row['purpose']}">
@@ -943,9 +1017,7 @@ EDITUSERPAGE;
       <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
 	  <br/>
       <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_edit_submit">Update Refund</button>
-	  
-      <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_assign_submit">Assign Refund</button>
-	  
+	 
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_void_submit">Void Refund</button>
 
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_rej_submit">Reject Refund</button>
@@ -1037,9 +1109,7 @@ EDITUSERPAGE;
       <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
 	  <br/>
       <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_edit_submit">Update Refund</button>
-	  
-      <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_assign_submit">Assign Refund</button>
-	  
+	  	  
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_void_submit">Void Refund</button>
 
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_rej_submit">Reject Refund</button>
@@ -1050,7 +1120,8 @@ EDITUSERPAGE;
 	  </form>
 EDITUSERPAGE;
 		
-	
+	//<button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_assign_submit">Assign Refund</button>
+
 		
 	}
 	
@@ -1376,12 +1447,9 @@ EDITUSERPAGE;
 
 
 function execute_the_reject(){
-	//$_POST
 
 	showHeader($username, $accessLvl);
-	//global $db;
 	include 'connectToDB.php'; 
-	
 	
 	//echo 'Executing the VOID <br>';	
 	$now = date("Y-m-d H:i:s");			
@@ -1401,21 +1469,19 @@ function execute_the_reject(){
 	}
 	
 	
-	///////////////////////BEGIN INSERT/////////////////////////////////////////////////////////////////////////////
+				///////////////////////BEGIN EMAIL NOTIFICATION/////////////////////////////////////////////////////////////////////////////
 				$query = "SELECT username FROM users WHERE user_id='{$_SESSION['userid']}'";
 				$result = mysqli_query($db,$query);
-				
-				
 				$rowUserNames=mysqli_fetch_array($result);
+				
+				//Functionality: creator gets emailed upon REJECTION
 				//dynamically build the to address from the username selected based on the recipients specified by the step in the process
 				$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
 				
-				
+				//IF THE REFUND WAS MARKED URGENT: email Erika as well
 				if($_POST['urgent']){ //verify that this works as intended
 				
 					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." has been rejected. <br>  This refund is marked as URGENT.";
-				
-
 					$from = "Patient Refund <noreply@chcb.org>";
 					$subject = "Updated Patient Refund Request";
 					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
@@ -1435,26 +1501,21 @@ function execute_the_reject(){
 					echo $status;
 					echo '<br>';
 					
-					
-					
+
 					echo 'the subject is <br>';
 					echo $subject;
 					echo '<br>';
 					
-	
 					echo 'the body of the email is something to the effect of: <br>';
 					echo $body;
 					
 					echo '<br>';
-
-				
-					mail_presets($to,$status); //creator
-					mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
+					mail_presets($to,$status); //notify creator
+					mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org)
+					
 				}else{
 		
 					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." has been rejected.";
-						
-	
 					$from = "Patient Refund <noreply@chcb.org>";
 					$subject = "Updated Patient Refund Request";
 					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
@@ -1486,13 +1547,7 @@ function execute_the_reject(){
 					
 					echo '<br>';
 
-					/*
-					echo $status;
-					echo '<br>';
-					*/
-					
-
-					mail_presets($to,$status);
+					mail_presets($to,$status);//notify creator
 					
 				}
 	
@@ -1507,6 +1562,215 @@ function execute_the_reject(){
 	echo '<br>';
 	
 	
+}
+
+function executeTheApprove(){
+	
+	showHeader($username, $accessLvl);
+	include 'connectToDB.php'; 
+	
+	$now = date("Y-m-d H:i:s");		
+	$newStatus="";
+	
+	
+	//PAR2 Initial
+	//include 'dump_all_page_contents.php';
+		///GET DEPT NAME//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//Get the name of the department, so we can select the correct column headings
+		$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
+		$result_dept_id = mysqli_query($db,$query_dept_id);
+		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
+
+		
+		$query_name="SELECT name FROM departments WHERE dept_id={$rowquery_dept_id['dept_id']}";
+		$result_name = mysqli_query($db,$query_name);
+		$rowquery_dept_name=mysqli_fetch_array($result_name);				
+	
+	///GET DEPT NAME//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		
+		
+		print "<table class = \"topMenu\">
+		<tr>
+		<td><a href=\"index.php\"  class = \"button\" >Home</td>";
+		if(strtoupper($rowquery_dept_name[0])=="ACCOUNTING"){
+	
+	if ($rowquery_dept_name[0]=="PAR2"){
+	
+			if($_POST['amount']>500){ //set status PAR2 Initial because it will require double approval
+
+				//update the record in the DB as voided
+				//sets both the status field to voided as well as the voided flag to 1
+				
+					if($_POST['status']=="PAR2 Initial"){//if already initially approved
+					
+						$query = "UPDATE refund SET 
+						modified_by='{$_SESSION['userid']}', 
+						modified_dt='{$now}', 
+						status='Billing Initial Approval' 
+						WHERE refund_id = '{$_POST['refund_id']}' ";
+						$result = mysqli_query($db,$query);
+						$last_id = mysqli_insert_id($db);				
+						
+						$newStatus='Billing Initial Approval';
+
+					}else{
+						
+						$query = "UPDATE refund SET 
+						modified_by='{$_SESSION['userid']}', 
+						modified_dt='{$now}', 
+						status='PAR2 Initial' 
+						WHERE refund_id = '{$_POST['refund_id']}' ";
+						$result = mysqli_query($db,$query);
+						$last_id = mysqli_insert_id($db);
+						
+						$newStatus='PAR2 Initial';
+						
+					}
+
+				if (mysqli_error($result)){
+					print mysqli_error($result);
+				}
+				
+
+				
+			}else{//o/w only single approval required so set the status directly to Billing Approval, and it will then show in their feeds
+				//update the record in the DB as voided
+				
+				$query = "UPDATE refund SET 
+				modified_by='{$_SESSION['userid']}', 
+				modified_dt='{$now}', 
+				status='Billing Initial Approval' 
+				WHERE refund_id = '{$_POST['refund_id']}' ";
+				$result = mysqli_query($db,$query);
+				$last_id = mysqli_insert_id($db);
+
+				if (mysqli_error($result)){
+					print mysqli_error($result);
+				}
+				
+				$newStatus='Billing Initial Approval';
+			}
+	
+		}
+		elseif ($rowquery_dept_name[0]=="ACCOUNTING"){	
+	
+				//update the record in the DB as voided
+				//sets both the status field to voided as well as the voided flag to 1
+				
+						$query = "UPDATE refund SET 
+						modified_by='{$_SESSION['userid']}', 
+						modified_dt='{$now}', 
+						status='ACCOUNTING APPROVED' 
+						WHERE refund_id = '{$_POST['refund_id']}' ";
+						$result = mysqli_query($db,$query);
+						$last_id = mysqli_insert_id($db);
+						
+						$newStatus='ACCOUNTING APPROVED';
+					
+
+				if (mysqli_error($result)){
+					print mysqli_error($result);
+				}
+				
+		}elseif($rowquery_dept_name[0]=="PAR1"){
+
+				///left off here
+		}		
+	
+		///////////////////////BEGIN EMAIL NOTIFICATION/////////////////////////////////////////////////////////////////////////////
+		$query = "SELECT username FROM users WHERE user_id='{$_SESSION['userid']}'";
+		$result = mysqli_query($db,$query);
+		$rowUserNames=mysqli_fetch_array($result);
+		
+		//Functionality: creator gets emailed upon REJECTION
+		//dynamically build the to address from the username selected based on the recipients specified by the step in the process
+		$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
+		
+		//IF THE REFUND WAS MARKED URGENT: email Erika as well
+		if($_POST['urgent']){ //verify that this works as intended
+		
+			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of ".$_POST['amount'] ." has been approved. <br>
+			The new status for this refund is: ".$newStatus." <br> This refund is marked as URGENT.";
+			$from = "Patient Refund <noreply@chcb.org>";
+			$subject = "Updated Patient Refund Request";
+			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
+			$body .="<br>Status: ".$status;
+				
+				
+			echo 'the from field is <br>';
+			echo $from;
+			echo '<br>';
+			
+			echo 'the to field is <br>';
+			echo $to;
+			echo '<br>';
+			
+												
+			echo 'the status is <br>';
+			echo $status;
+			echo '<br>';
+			
+
+			echo 'the subject is <br>';
+			echo $subject;
+			echo '<br>';
+			
+			echo 'the body of the email is something to the effect of: <br>';
+			echo $body;
+			
+			echo '<br>';
+			mail_presets($to,$status); //notify creator
+			mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org)
+			
+		}else{
+
+			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of ".$_POST['amount'] ." has been approved. <br>
+			The new status for this refund is: ".$newStatus." <br> This refund is marked as URGENT.";
+			$from = "Patient Refund <noreply@chcb.org>";
+			$subject = "Updated Patient Refund Request";
+			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
+			$body .="<br>Status: ".$status;
+				
+				
+			echo 'the from field is <br>';
+			echo $from;
+			echo '<br>';
+			
+			echo 'the to field is <br>';
+			echo $to;
+			echo '<br>';
+			
+												
+			echo 'the status is <br>';
+			echo $status;
+			echo '<br>';
+			
+			
+			
+			echo 'the subject is <br>';
+			echo $subject;
+			echo '<br>';
+			
+
+			echo 'the body of the email is something to the effect of: <br>';
+			echo $body;
+			
+			echo '<br>';
+
+			mail_presets($to,$status);//notify creator
+			
+		}
+
+
+	///////////////END EMAIL NOTIFICATIONS
+	
+
+	print '<h3 align="center"> Refund with Refund ID:  '.$_POST['refund_id'].' has been approved! <br> The new status is: ' .$newStatus.'</h3>';
+	print '<h4 align="center"><a href="index.php">Return to Refunds Page</a></h4>';
+	echo '<br>';
+	//die();
 }
 
 
@@ -1566,7 +1830,7 @@ function execute_the_delete(){
 		print mysqli_error($result);
 	}
 
-	print '<h3 align="center"> Refund with Refund ID:  '.$_POST['refund_id'].' has been rejected!</h3>';
+	print '<h3 align="center"> Refund with Refund ID:  '.$_POST['refund_id'].' has been rejected/deleted!</h3>';
 	print '<h4 align="center"><a href="refunds.php">Return to Refunds Page</a></h4>';
 	echo '<br>';
 	
@@ -1725,20 +1989,6 @@ function showRejPage($username='', $accessLvl = '', $errors = ''){ //page where 
 	$result = mysqli_query($db,$query); 
 	$row = mysqli_fetch_array($result);
 	
-	/*
-	echo $query;
-	echo '<br>';
-	var_dump($result);
-	
-		var_dump($row);
-		*/
-	
-
-	/*
-	
-	echo 'hiya';
-	echo '<br>';
-	*/
 
 	print <<<EDITUSERPAGE
 <h2 align="center">Reject The Refund</h2>

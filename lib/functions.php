@@ -509,9 +509,9 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 				}
 				
 				
-				print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>';
+				print '<td><a href="search_landing.php?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>';
 				
-				print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>';
+				print '<td><a href="search_landing.php?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>';
 
 
 				print '<td>'.$row['dt_request'].'</td>
