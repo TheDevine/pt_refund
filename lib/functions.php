@@ -118,12 +118,9 @@ function showHeader($username='',$accessLvl=''){
 	
 	//dept_id=2 is accounting, 3= billing
 	
-	
 	$query_dept = "SELECT dept_id FROM users WHERE user_id='{$_SESSION['userid']}'";
 	$result_dept = mysqli_query($db,$query_dept); 
 	$dept_row = mysqli_fetch_array($result_dept);
-	
-
 	
 	$query_deptName = "SELECT name FROM departments WHERE dept_id='{$dept_row['dept_id']}'";
 	$result_deptName = mysqli_query($db,$query_deptName); 
@@ -160,9 +157,9 @@ HEADER;
 		print "<a href =\"logout.php\">Logout</a></div>";
 		
 			if($dept_rowName[0]=="Accounting"){
-								print "<table class = \"topMenu\"><tr><td>
+			
+				print "<table class = \"topMenu\"><tr><td>
 				<a href=\"index.php\" id = \"selected\">Home</td>
-				<td><a href=\"accounting_refunds.php\" class = \"button\">Assigned Refunds</a></td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -173,10 +170,9 @@ HEADER;
 				}
 				
 			}elseif($dept_rowName[0]=="Billing"){
-				
+			
 				print "<table class = \"topMenu\"><tr><td>
 				<a href=\"index.php\" id = \"selected\">Home</td>
-				<td><a href=\"billing_refunds.php\" class = \"button\">Assigned Refunds</a></td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -190,7 +186,6 @@ HEADER;
 				
 				print "<table class = \"topMenu\"><tr><td>
 				<a href=\"index.php\" id = \"selected\">Home</td>
-				<td><a href=\"index.php\" class = \"button\">Refunds</a></td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -199,6 +194,7 @@ HEADER;
 				}else {
 				print '</tr></table>';
 				}
+					
 				
 			}
 
@@ -243,7 +239,6 @@ HEADER;
 		print "<table class = \"topMenu\">
 		<tr>
 		<td><a href=\"index.php\"  class = \"button\" >Home</td>
-		<td><a href=\"index.php\" class = \"button\">Refunds</a></td>
 		<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>		
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -392,13 +387,14 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 	$specifier="";
 	if(strtoupper($rowquery_dept_name[0])=='PAR2'){
-		$specifier= " status='NEW' OR status='PAR2 Initial' ";
+		
+		$specifier= " status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='ACCOUNTING'){
-		$specifier= " status= 'ACCOUNTING APPROVAL' ";
+		$specifier= " status= 'ACCOUNTING APPROVAL' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='PAR1'){
-		$specifier= " status= 'ACCOUNTING APPROVED' ";
+		$specifier= " status= 'ACCOUNTING APPROVED' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
 	}else{ //because currently isnt reflective of new dept status structure
-		$specifier= " status='NEW' OR status='PAR2 Initial' ";
+		$specifier= " status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
 
 	}		
 	
@@ -456,11 +452,11 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	$row = @mysqli_fetch_array($result);
 	$sizeOfResultSet=sizeof($row);	
 	
-	/*
+	
 	echo 'the query was ';
 	echo $query ;
 	echo '<br>';
-	*/
+	
 	if($sizeOfResultSet){
 		
 

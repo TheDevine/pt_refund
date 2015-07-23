@@ -19,24 +19,6 @@ if(isset($_POST)){
 }
 */
 
-/*
-The POST Contents are:
-
-array (size=4)
-  'refund_search_term' => string 'Names' (length=5)
-  '_search_submit' => string '1' (length=1)
-  'refund_id' => string '' (length=0)
-  'Continue' => string 'continue' (length=8)
-
-The REQUEST Contents are:
-
-array (size=4)
-  'refund_search_term' => string 'Names' (length=5)
-  '_search_submit' => string '1' (length=1)
-  'refund_id' => string '' (length=0)
-  'Continue' => string 'continue' (length=8)
-
-*/
 
 /*
 
@@ -50,29 +32,12 @@ refund_search_termDate 415 (now 577)
 
 
 
-
 if(!strpos($_SERVER['HTTP_REFERER'],'?') && !(isset($_POST['Search'])) && !strpos($_SERVER['REQUEST_URI'],'?')>0  ){
 	
-	/*
-	include 'dump_all_page_contents.php'; 
-	echo '<br>';
-	echo 'im coming here now';
-	*/
-	//die();
 	//reset_SAVE_POST();
 }
 
 
-/*
-var_dump($_GET);
-
-echo $_SERVER['REQUEST_METHOD'];
-*/
-
-
-//die();
-
-//echo ' am i ';
 
 if(!isset($_SESSION['initialOffset']) || $_SESSION['initialOffset']==""){
 	$_SESSION['initialOffset']=0; //set the initial offset to the beginning of the result set if no start is specified
@@ -269,26 +234,20 @@ if( isset($_POST['refund_search_term']) && strlen($_POST['refund_search_term'])>
 
 	if(!isset($_SESSION['SAVE_POST']) && $_POST['Search']=='search'){//if they've searched at least once save the post session contents
 			$_SESSION['SAVE_POST']=$_POST;
-
 	}
-//_search_by_names_submit
 
-//include 'dump_all_page_contents.php';    
-//die();
-if($_POST['refund_search_term']=="Names"){
-	searchByNames($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
-}elseif($_POST['refund_search_term']=="Values"){
-	searchByValues($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
-}elseif($_POST['refund_search_term']=="Status"){
-	searchByStatus($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
-}else{
-	searchByDates($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
-}
+		if($_POST['refund_search_term']=="Names"){
+			searchByNames($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
+		}elseif($_POST['refund_search_term']=="Values"){
+			searchByValues($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
+		}elseif($_POST['refund_search_term']=="Status"){
+			searchByStatus($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
+		}else{
+			searchByDates($_SESSION['username'],$_SESSION['access'],$_POST['startPos']);
+		}
 }elseif(isset($_POST['refund_search_termName']) && strlen($_POST['refund_search_termName'])>1 && $_POST['refund_search_termName']!=NULL){
 
-	//$query = "SELECT * from refund WHERE {$_POST['refund_search_term']}='{$_POST['search_value']}' ";
-	//$result = mysqli_query($db,$query);			
-	
+
 	//navigation menu, top banner nad logout button/////////////////////////////////////////////////////////////////////////////////////
 	showHeaderSearchLanding($username, $accessLvl);
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -309,12 +268,7 @@ if($_POST['refund_search_term']=="Names"){
 		LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 	}
 	
-		/*
-		echo 'the query is: ';
-		echo '<br>';
-		echo $query;
-		*/
-	
+
 	$result = mysqli_query($db,$query);
 
 	$row = mysqli_fetch_array($result);
@@ -343,88 +297,79 @@ if($_POST['refund_search_term']=="Names"){
 			echo '<font color=red><center>There were no results found for the search criteria specified.  <br> If you would like to search again please modify your search values, and resubmit. </center></font>';
 		}
 		
-		
-	/*
-	echo 'the query is <br>';
-	echo $query; 	
-	*/
 	
 	$result = mysqli_query($db,$query);
 		
 	while ($row = mysqli_fetch_array($result)){
 
-	
+		$refund_requested_by="";
+		$queryUserIDsRequested="SELECT first_name, last_name FROM users WHERE user_id= '{$row['created_by']}'";
+		$resultUserIDsRequested = mysqli_query($db,$queryUserIDsRequested); 
 
-	$refund_requested_by="";
-	$queryUserIDsRequested="SELECT first_name, last_name FROM users WHERE user_id= '{$row['created_by']}'";
-	$resultUserIDsRequested = mysqli_query($db,$queryUserIDsRequested); 
-	
-	while ($rowUserIdsRequested=mysqli_fetch_array($resultUserIDsRequested)){//build up the assigned to username
-		$refund_requested_by=$rowUserIdsRequested['first_name'].' '.$rowUserIdsRequested['last_name'];
-	}
-			
-	$date_requested=$row['dt_request'];
-
-	$today_dt = new DateTime($current_date);
-	$entered_dt = new DateTime($date_requested);
-	$interval = date_diff($entered_dt,$today_dt);
-
-	$refund_assigned_to="";
-	$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
-	$resultUserIDs = mysqli_query($db,$queryUserIDs); 
-	
-	while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
-		$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
-	}
-	
-
-	
-	if($row['urgent']){
-			print '<tr bgcolor=#EE0000 height=50>';
+		while ($rowUserIdsRequested=mysqli_fetch_array($resultUserIDsRequested)){//build up the assigned to username
+			$refund_requested_by=$rowUserIdsRequested['first_name'].' '.$rowUserIdsRequested['last_name'];
 		}
-		elseif($interval->days>30 && $row['status']!="COMPLETED"){
-			print '<tr bgcolor=#FF69B4>';
-		}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
-			print '<tr bgcolor=yellow>';
-		}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
-			print '<tr bgcolor=#00BB00>';
-		}else{
-			print '<tr>';
+				
+		$date_requested=$row['dt_request'];
+
+		$today_dt = new DateTime($current_date);
+		$entered_dt = new DateTime($date_requested);
+		$interval = date_diff($entered_dt,$today_dt);
+
+		$refund_assigned_to="";
+		$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
+		$resultUserIDs = mysqli_query($db,$queryUserIDs); 
+
+		while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
+			$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
 		}
-	
-	
 
-	//print '<tr>
-	print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>
-	<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
-	<td>'.$row['dt_request'].'</td>
-	<td>'. ($row['urgent'] ? 'Yes' : 'No') .'</td>
-	<td>'.$refund_requested_by.'</td>
-	<td>'.$row['payable'].'</td>';
-	print '<td>$ '.$row['amount'].'</td>';
-	
-	if(!$row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>NEW</td>';
-	}elseif(!$row['accounting_approval'] && $row['billing_initial_approval']){
-		print '<td>BILLING INITIALLY APPROVED</td>';
-	}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>ACCOUNTING APPROVED</td>';
-	}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && $row['billing_final_approval']){
-		print '<td>COMPLETED</td>';
-	}elseif($row['status']=="REJECTED"){
-		print '<td>REJECTED</td>';
-	}elseif($row['status']=="VOIDED"){
-		print '<td>VOIDED</td>';
-	}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>ACCOUNTING APPROVED</td>';
-	}
+		if($row['urgent']){
+				print '<tr bgcolor=#EE0000 height=50>';
+			}
+			elseif($interval->days>30 && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#FF69B4>';
+			}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=yellow>';
+			}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#00BB00>';
+			}else{
+				print '<tr>';
+			}
 
 
-	print '<td>'.$refund_assigned_to.'</td>';
 
-	print	'</td></tr>';
+		//print '<tr>
+		print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>
+		<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
+		<td>'.$row['dt_request'].'</td>
+		<td>'. ($row['urgent'] ? 'Yes' : 'No') .'</td>
+		<td>'.$refund_requested_by.'</td>
+		<td>'.$row['payable'].'</td>';
+		print '<td>$ '.$row['amount'].'</td>';
 
-}			
+		if(!$row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
+			print '<td>NEW</td>';
+		}elseif(!$row['accounting_approval'] && $row['billing_initial_approval']){
+			print '<td>BILLING INITIALLY APPROVED</td>';
+		}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && !$row['billing_final_approval']){
+			print '<td>ACCOUNTING APPROVED</td>';
+		}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && $row['billing_final_approval']){
+			print '<td>COMPLETED</td>';
+		}elseif($row['status']=="REJECTED"){
+			print '<td>REJECTED</td>';
+		}elseif($row['status']=="VOIDED"){
+			print '<td>VOIDED</td>';
+		}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
+			print '<td>ACCOUNTING APPROVED</td>';
+		}
+
+
+		print '<td>'.$refund_assigned_to.'</td>';
+
+		print	'</td></tr>';
+
+	}			
 
 	print <<<EDITUSERPAGE
 
@@ -435,30 +380,22 @@ EDITUSERPAGE;
 		echo '<br>';
 		echo '<br>';
 		
-		//if(!isset($_GET['status_order'])){
 		print <<<EDITUSERPAGE
 		<center><a href="unset_search.php"><button value="Back" name="Back">Back To Search Page</button></a></center>
 EDITUSERPAGE;
-		//}
-		
 
-
-
+	
 		echo '<br>';
 		echo '<br>';
 		echo '<br>';
 		echo '<br>';
 
-//die();
 
 }elseif(isset($_POST['refund_search_termValue']) && strlen($_POST['refund_search_termValue'])>1 && $_POST['refund_search_termValue']!=NULL){
-//$_POST['refund_search_termValue'] represents their selection from the drop down menu
-	
+
 	//navigation menu, top banner nad logout button/////////////////////////////////////////////////////////////////////////////////////
 	showHeaderSearchLanding($username, $accessLvl);
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	
 	
 	//trick below
 	if(!isset($_SESSION['SAVE_POST']) && $_POST['Search']=='search'){//if they've searched at least once save the post session contents
@@ -466,13 +403,6 @@ EDITUSERPAGE;
 	}
 	
 
-	/*
-	var_dump($_SESSION);
-
-	echo 'start range <br>';
-	echo $_SESSION['RowsPerPage'];
-	*/
-	
 	//actual assignment will be dynamically retrieved from the value in the table
 	//$_SESSION['RowsPerPage']=15;
 	//set initial offset and calculate current offset;
@@ -496,9 +426,7 @@ EDITUSERPAGE;
 			ORDER BY refund_id ASC 
 			LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}
-			
-	
-		
+				
 	}else{
 		//$query = "SELECT * from refund WHERE {$_POST['refund_search_termValue']} LIKE '%{$_POST['search_value']}%'";
 		
@@ -516,9 +444,7 @@ EDITUSERPAGE;
 			ORDER BY {$_SESSION['order']} 
 			LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 			
-			
 
-			
 		}else{
 			$query = "SELECT * from (refund 
 			WHERE {$_POST['refund_search_termValue']} 
@@ -593,9 +519,7 @@ EDITUSERPAGE;
 			$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
 		}
 		
-		
-		
-		
+	
 		if($interval->days>30 && $row['status']!="COMPLETED"){
 			print '<tr bgcolor=#FF0000>';
 		}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
@@ -664,8 +588,6 @@ EDITUSERPAGE;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	echo '<br><br><br>';
 
-
-
 	if(!isset($_SESSION['SAVE_POST']) && $_POST['Search']=='search'){//if they've searched at least once save the post session contents
 			$_SESSION['SAVE_POST']=$_POST;
 
@@ -673,26 +595,16 @@ EDITUSERPAGE;
 
 	//include 'dump_all_page_contents.php';  
 
-	/*
-		urgent
-		accounting approval
-		billing initial approval
-		billing final approval
-		rejected
-		voided	
-	*/
-	
 
 	
 	if ($_POST['refund_search_termStatus_Value']){//determine whether to search for inclusion or exclusion of search status type
 		
 		if (isset($_SESSION['order']) && strlen($_SESSION['order'])>0){
-
-		$query = "SELECT * from refund WHERE {$_POST['refund_search_termStatus']}=1' ORDER BY {$_SESSION['order']}";
-		ECHO '<center> <b>Refunds where the status is '.$_POST['refund_search_termStatus'].'</b></center><br>';
+			$query = "SELECT * from refund WHERE {$_POST['refund_search_termStatus']}=1' ORDER BY {$_SESSION['order']}";
+			ECHO '<center> <b>Refunds where the status is '.$_POST['refund_search_termStatus'].'</b></center><br>';
 		}else{
-		$query = "SELECT * from refund WHERE {$_POST['refund_search_termStatus']}=1'";
-		ECHO '<center> <b>Refunds where the status is '.$_POST['refund_search_termStatus'].'</b></center><br>';
+			$query = "SELECT * from refund WHERE {$_POST['refund_search_termStatus']}=1'";
+			ECHO '<center> <b>Refunds where the status is '.$_POST['refund_search_termStatus'].'</b></center><br>';
 		}
 
 	}else{
@@ -706,11 +618,6 @@ EDITUSERPAGE;
 
 	}
 	$result = mysqli_query($db,$query);
-
-	
-	//echo 'the query search term status is <br>';
-	//echo $query;
-	
 	$row = mysqli_fetch_array($result);
 	
 
@@ -729,8 +636,7 @@ EDITUSERPAGE;
 				<td><center><b><a href='.$_SERVER['PHP_SELF'].'?payable_order=y>Payable To</a></b></center></td>
 				<td><center><b><a href='.$_SERVER['PHP_SELF'].'?amount_order=y>Amount</a></b></center></td>
 				<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Status</a></b></center></td>
-				<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Assigned To</a></b></center></td>'
-				;	
+				<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Assigned To</a></b></center></td>';	
 				
 			}
 			
@@ -738,7 +644,7 @@ EDITUSERPAGE;
 			echo '<font color=red><center>There were no results found for the search criteria specified.  <br> If you would like to search again please modify your search values, and resubmit. </center></font>';
 		}
 		
-$result = mysqli_query($db,$query);
+	$result = mysqli_query($db,$query);
 
 	echo 'the query is <br>';
 	echo $query; 	
@@ -751,7 +657,6 @@ while ($row = mysqli_fetch_array($result)){
 	$resultUserIDsRequested = mysqli_query($db,$queryUserIDsRequested); 
 	
 
-	
 	while ($rowUserIdsRequested=mysqli_fetch_array($resultUserIDsRequested)){//build up the assigned to username
 		$refund_requested_by=$rowUserIdsRequested['first_name'].' '.$rowUserIdsRequested['last_name'];
 	}
@@ -845,8 +750,6 @@ EDITUSERPAGE;
 	
 		if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 			
-
-
 			if($_GET['report_id']==1){
 				reportCompleted();
 			}
@@ -917,20 +820,9 @@ EDITUSERPAGE;
 	$result = mysqli_query($db,$query);
 	$row = mysqli_fetch_array($result);
 	
-	/*
-		*/
-	
-	/*
-	echo 'the query is <br>';
-	echo $query; 	
-	echo '<br><br>';
-	echo "LINE: 413ish";
-	
-	echo 'first time we are dealing with pagination and offsets';
-	*/
+
 
 	//END initial config of Pagination//////////////////////////////////////////////////////////////////////////////////////////////
-	
 
 	
 	if (sizeof($row)){
@@ -975,9 +867,7 @@ EDITUSERPAGE;
 				if($result_display_ctr<$_SESSION['RowsPerPage']){
 
 					$result_display_ctr++;
-					
-					//var_dump($interval);
-					
+
 					if($interval->days>30 && $row['status']!="COMPLETED"){
 						print '<tr bgcolor=#FF0000>';
 					}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
@@ -1027,12 +917,11 @@ EDITUSERPAGE;
 
 		}			
 
-if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
+	if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
 
-	//if()
 	displayPagination($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
 
-}
+	}
 
 
 
@@ -1044,8 +933,6 @@ if(isset($_POST['_search_submit']) && $_POST['_search_submit']!="" && $_POST['_s
 
 	showSearchPage($_SESSION['username'],$_SESSION['access']);
 
-	//echo 'am i down here';
-	
 	$userIDSearched="";
 	
 	if( isset($_POST['refund_search_term']) && strpos($_POST['refund_search_term'],'_by') ){
@@ -1053,13 +940,9 @@ if(isset($_POST['_search_submit']) && $_POST['_search_submit']!="" && $_POST['_s
 		echo '<center> Please further specify by selecting a name from the drop down below: </center>';
 		echo '<br>';
 		
-		//$query = "SELECT user_id from users WHERE first_name LIKE '%{$firstName}%' AND last_name LIKE '%{$lastName}%'";
-		//$result = mysqli_query($db,$query);	
-		
 		$query_users = 'SELECT user_id, first_name, last_name FROM users';
 		$result_users = mysqli_query($db,$query_users);
 
-			//print '&nbsp;&nbsp<a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=approve">Approve</a></td></tr>';
 		
 			print <<<EDITUSERPAGE
 <center><h2 align="center">Search Refunds</h2>
@@ -1101,6 +984,8 @@ EDITUSERPAGE;
 	}
 
 	else{
+		
+		
 	if((isset($_POST['search_value']) && (strlen($_POST['search_value'])>=1) || is_numeric($_POST['search_value']) ) && ( isset($_POST['refund_search_term']) && strlen($_POST['refund_search_term'])>1 )){
 
 			//navigation menu, top banner nad logout button/////////////////////////////////////////////////////////////////////////////////////
@@ -1218,97 +1103,87 @@ $result = mysqli_query($db,$query);
 
 while ($row = mysqli_fetch_array($result)){
 
+			$refund_requested_by="";
+			$queryUserIDsRequested="SELECT first_name, last_name FROM users WHERE user_id= '{$row['created_by']}'";
+			$resultUserIDsRequested = mysqli_query($db,$queryUserIDsRequested); 
 
-	$refund_requested_by="";
-	$queryUserIDsRequested="SELECT first_name, last_name FROM users WHERE user_id= '{$row['created_by']}'";
-	$resultUserIDsRequested = mysqli_query($db,$queryUserIDsRequested); 
-	
-	while ($rowUserIdsRequested=mysqli_fetch_array($resultUserIDsRequested)){//build up the assigned to username
-		$refund_requested_by=$rowUserIdsRequested['first_name'].' '.$rowUserIdsRequested['last_name'];
-	}
-			
-	$date_requested=$row['dt_request'];
+			while ($rowUserIdsRequested=mysqli_fetch_array($resultUserIDsRequested)){//build up the assigned to username
+				$refund_requested_by=$rowUserIdsRequested['first_name'].' '.$rowUserIdsRequested['last_name'];
+			}
+					
+			$date_requested=$row['dt_request'];
 
-	$today_dt = new DateTime($current_date);
-	$entered_dt = new DateTime($date_requested);
-	$interval = date_diff($entered_dt,$today_dt);
+			$today_dt = new DateTime($current_date);
+			$entered_dt = new DateTime($date_requested);
+			$interval = date_diff($entered_dt,$today_dt);
 
-	$refund_assigned_to="";
-	$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
-	$resultUserIDs = mysqli_query($db,$queryUserIDs); 
-	
-	while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
-		$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
-	}
-	
-	
-	if($interval->days>30 && $row['status']!="COMPLETED"){
-		print '<tr bgcolor=#FF0000>';
-	}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
-		print '<tr bgcolor=yellow>';
-	}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
-		print '<tr bgcolor=#009900>';
-	}else{
-		print '<tr>';
-	}
+			$refund_assigned_to="";
+			$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
+			$resultUserIDs = mysqli_query($db,$queryUserIDs); 
 
-	//print '<tr>
-	print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>
-	<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
-	<td>'.$row['dt_request'].'</td>
-	<td>'. ($row['urgent'] ? 'Yes' : 'No') .'</td>
-	<td>'.$refund_requested_by.'</td>
-	<td>'.$row['payable'].'</td>';
-	print '<td>$ '.$row['amount'].'</td>';
-	
-	if(!$row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>NEW</td>';
-	}elseif(!$row['accounting_approval'] && $row['billing_initial_approval']){
-		print '<td>BILLING INITIALLY APPROVED</td>';
-	}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>ACCOUNTING APPROVED</td>';
-	}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && $row['billing_final_approval']){
-		print '<td>COMPLETED</td>';
-	}elseif($row['status']=="REJECTED"){
-		print '<td>REJECTED</td>';
-	}elseif($row['status']=="VOIDED"){
-		print '<td>VOIDED</td>';
-	}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>ACCOUNTING APPROVED</td>';
-	}
+			while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
+				$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
+			}
 
 
-	print '<td>'.$refund_assigned_to.'</td>';
+			if($interval->days>30 && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#FF0000>';
+			}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=yellow>';
+			}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#009900>';
+			}else{
+				print '<tr>';
+			}
 
-	print	'</td></tr>';
+			//print '<tr>
+			print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>
+			<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
+			<td>'.$row['dt_request'].'</td>
+			<td>'. ($row['urgent'] ? 'Yes' : 'No') .'</td>
+			<td>'.$refund_requested_by.'</td>
+			<td>'.$row['payable'].'</td>';
+			print '<td>$ '.$row['amount'].'</td>';
 
-}	
+			if(!$row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
+				print '<td>NEW</td>';
+			}elseif(!$row['accounting_approval'] && $row['billing_initial_approval']){
+				print '<td>BILLING INITIALLY APPROVED</td>';
+			}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && !$row['billing_final_approval']){
+				print '<td>ACCOUNTING APPROVED</td>';
+			}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && $row['billing_final_approval']){
+				print '<td>COMPLETED</td>';
+			}elseif($row['status']=="REJECTED"){
+				print '<td>REJECTED</td>';
+			}elseif($row['status']=="VOIDED"){
+				print '<td>VOIDED</td>';
+			}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
+				print '<td>ACCOUNTING APPROVED</td>';
+			}
+
+
+			print '<td>'.$refund_assigned_to.'</td>';
+
+			print	'</td></tr>';
+
+		}//end while	
 				
-	}
+	} //end ($_POST['search_value'])
 
 	
 	
-	}
+	} //end else
 	//end below
 
-			echo 'the query is: ';
+		echo 'the query is: ';
 		echo '<br>';
 		echo $query;
 	
-	}else{//this else is for the initial search landing page
+	}else{//this else is for the initial search landing page  //else $_POST['_search_submit'])
 
-	//echo 'dont want to show this else';
-	//die();
 	
 	showHeaderSearchLanding($username, $accessLvl);
 
-//echo 'in the else <br>';
-
-/*
-Names
-Values
-Dates
-*/
 
 $typeOFRefundSearch=array('Dates','Names','Status','Values');
 

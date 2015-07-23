@@ -412,7 +412,6 @@ HEADER;
 		
 		print "<table class = \"topMenu\">
 		<tr><td><a href=\"index.php\"  class = \"button\" >Home</td>
-		<td><a href=\"index.php\" class = \"button\">Refunds</a></td>
 		<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -503,7 +502,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
           <tr>
           	<td>Amount</td>
 			
-          	<td><input maxlength="50" name="amount" type="text" value ="{$_POST['amount']}"><br />
+          	<td>$<input maxlength="50" name="amount" type="text" value ="{$_POST['amount']}"><br />
           </tr>
           <tr>
             <td>Check Payabless To:</td>

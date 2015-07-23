@@ -160,12 +160,11 @@ HEADER;
 		print "<table class = \"topMenu\">";
 
 		if($dept_rowName['name']=="Accounting"){
-								print "<table class = \"topMenu\"><tr><td>
-				<a href=\"index.php\" id = \"selected\">Home</td>
-				<td><a href=\"accounting_refunds.php\" class = \"button\">Accounting</a></td>
+			print "<table class = \"topMenu\"><tr><td>
+				<a href=\"index.php\" >Home</td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"search_landing.php\"  class = \"button\">Search</a></td>
-				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
+				<td><a href=\"mngaccount.php\"  class = \"button\" id = \"selected\">My Account</a></td>";
 				if ($accessLvl == 'S'){
 				print '<td><a href="admin.php" class = "button">Admin</a></td></tr></table>';	
 				}else {
@@ -175,7 +174,6 @@ HEADER;
 		}elseif($dept_rowName=="Billing"){
 							print "<table class = \"topMenu\"><tr><td>
 				<a href=\"index.php\" id = \"selected\">Home</td>
-				<td><a href=\"billing_refunds.php\" class = \"button\">Billing</a></td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"search_landing.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -188,7 +186,6 @@ HEADER;
 		}else{
 				print "<table class = \"topMenu\"><tr><td>
 				<a href=\"index.php\" id = \"selected\">Home</td>
-				<td><a href=\"refunds.php\" class = \"button\">Refunds</a></td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"search_landing.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
