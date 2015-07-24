@@ -63,9 +63,10 @@
 
 if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 	
-			
+		/*	
 	echo 'reloaded to here';
 	die();
+	*/
 			
 	if($_GET['report_id']==0){
 		reportAll();
@@ -369,7 +370,7 @@ HEADER;
 		
 		print "<table class = \"topMenu\">
 		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >HOME</td>";
+		<td><a href=\"reset_home.php\"  class = \"button\" >HOME</td>";
 
 		print "<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>		
@@ -419,9 +420,8 @@ HEADER;
 		
 		print "<table class = \"topMenu\">
 		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >Home</td>";
+		<td><a href=\"reset_home.php\" class = \"button\" >Home</td>";
 
-		
 		print "<td><a href=\"reports.php\"  class = \"button\" id = \"selected\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>		
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -470,7 +470,7 @@ HEADER;
 		
 		print "<table class = \"topMenu\">
 		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >Home</td>";
+		<td><a href=\"reset_home.php\" class = \"button\" >Home</td>";
 		
 
 
@@ -524,7 +524,7 @@ HEADER;
 		
 		print "<table class = \"topMenu\">
 		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >Home</td>";
+		<td><a href=\"reset_home.php\" class = \"button\" >Home</td>";
 		
 		//<td><a href=\"index.php\" class = \"button\">Refunds</a></td>
 		print "<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
@@ -609,7 +609,7 @@ if( isset($_SESSION['username']) && isset($_SESSION['access']) ){
 		
 		print "<table class = \"topMenu\">
 		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >Home</td>
+		<td><a href=\"reset_home.php\" class = \"button\" >Home</td>
 		<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\" id = \"selected\" >Search</a></td>		
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -1362,7 +1362,7 @@ function showDelPage($username='', $accessLvl = '', $errors = ''){ //page where 
           </tr>
           <tr>
             <td>Encounter Number</td>
-            <td><input name="enc_nbr" type="text" value="{$row['NG_enc_id']}">
+            <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
           <tr>
@@ -1545,10 +1545,7 @@ function executeTheApprove(){
 
 
 
-		
-		print "<table class = \"topMenu\">
-		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >Home</td>";
+
 		//if(strtoupper($rowquery_dept_name[0])=="ACCOUNTING"){
 	
 	if ($rowquery_dept_name[0]=="PAR2"){
@@ -3711,6 +3708,19 @@ function reportAll(){
 
 	$result = mysqli_query($db,$query); 
 	
+	echo 'the query: <br>';
+	echo $query;
+	
+	
+	//FULL RESULT SET
+	$queryFullResultSet = "SELECT * FROM refund WHERE 1=1";
+			
+	$resultFull = mysqli_query($db,$queryFullResultSet); 
+	$rowEntire = @mysqli_fetch_array($resultFull);
+	$numResultENTIRERows=$resultFull->num_rows;
+	//END FULL RESULT SET
+	
+	
 	
 	$arrayRefundUsers=array();
 	
@@ -3813,7 +3823,7 @@ function reportAll(){
 
 	}
 
-		instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+		instantiate_page_variablesReports($numResultENTIRERows,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
 
 
 	//print '<h3 align="center"><a href="addrefund.php">Create a New Refund Request</a></h3>';
@@ -3822,21 +3832,27 @@ function reportAll(){
 
 	print '</table></div>';
 
+	/*
+	echo 'forward ';
+	echo $URL_String_FORWARD;
+	echo '<br>';
+	*/
 
+//if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
 
-if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
+	displayPaginationReports($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
 
-	displayPaginationReports($tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+//}else{
 
-}else{
-
+	/*
 	print <<<EDITUSERPAGE
 		<br><center><a href="reports.php"><button value="Back" name="Back">Back To Reports Page</button></a></center>
 EDITUSERPAGE;
 	
 	showFooter();
+	*/
 	
-}
+//}
 
 }
 
@@ -4254,6 +4270,8 @@ function reportNew(){
 	
 
 	$result = mysqli_query($db,$query); 
+	
+	
 	$arrayRefundUsers=array();
 	
 	$queryUserIDs="SELECT user_id, first_name, last_name FROM users";

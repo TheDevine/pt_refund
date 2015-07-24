@@ -159,7 +159,7 @@ HEADER;
 			if($dept_rowName[0]=="Accounting"){
 			
 				print "<table class = \"topMenu\"><tr><td>
-				<a href=\"index.php\" id = \"selected\">Home</td>
+				<a href=\"reset_home.php\" id = \"selected\" class = \"button\" >Home</td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -172,7 +172,7 @@ HEADER;
 			}elseif($dept_rowName[0]=="Billing"){
 			
 				print "<table class = \"topMenu\"><tr><td>
-				<a href=\"index.php\" id = \"selected\">Home</td>
+				<a href=\"reset_home.php\" id = \"selected\">Home</td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -185,7 +185,7 @@ HEADER;
 			}else{
 				
 				print "<table class = \"topMenu\"><tr><td>
-				<a href=\"index.php\" id = \"selected\">Home</td>
+				<a href=\"reset_home.php\" id = \"selected\">Home</td>
 				<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 				<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 				<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -238,7 +238,7 @@ HEADER;
 		
 		print "<table class = \"topMenu\">
 		<tr>
-		<td><a href=\"index.php\"  class = \"button\" >Home</td>
+		<td><a href=\"reset_home.php\"  class = \"button\" >Home</td>
 		<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>		
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -453,6 +453,22 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	$sizeOfResultSet=sizeof($row);	
 	
 	
+	//FULL RESULT SET
+	$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount,status,refund_id,payable,accounting_approval,billing_initial_approval,billing_final_approval,urgent 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.assigned_to = U.user_id 
+			WHERE ".$specifier;
+			
+			
+	$resultFull = mysqli_query($db,$queryFullResultSet); 
+	$rowEntire = @mysqli_fetch_array($resultFull);
+	$numResultENTIRERows=$resultFull->num_rows;
+	//END FULL RESULT SET
+	
+	
+	
 	echo 'the query was ';
 	echo $query ;
 	echo '<br>';
@@ -479,6 +495,13 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	$result_display_ctr=0;
 	
 	$numResultRows=$result->num_rows;
+	
+	/*
+	echo 'the numResults is ';
+	echo $numResultRows;
+	echo '<br>';
+	var_dump($result);
+	*/
 
 	while ($row = @mysqli_fetch_array($result)){
 		
@@ -521,20 +544,21 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			
 				
 		}
-		
-		
-		instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+
+		instantiate_page_variables($numResultENTIRERows,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+
+		//instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
 	}	
 	
 	print '</table></div>';
 
-	
-	
-	if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
 
-		displayPaginationINDEX($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+	
+	//if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
 
-	}
+		displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+
+	//}
 
 	
 }else{
@@ -620,7 +644,7 @@ function showEditPage($username='', $accessLvl = '', $errors = ''){ //page where
           </tr>
           <tr>
           	<td>Amount</td>
-          	<td><input maxlength="50" name="amount" type="text" value ="$ {$row['amount']}"><br />
+          	<td>$<input maxlength="50" name="amount" type="text" value ="{$row['amount']}"><br />
           </tr>
           <tr>
             <td>Check Payable To:</td>
@@ -653,12 +677,12 @@ function showEditPage($username='', $accessLvl = '', $errors = ''){ //page where
           </tr>
           <tr>
             <td>Encounter Number</td>
-            <td><input name="enc_nbr" type="text" value="{$row['NG_enc_id']}">
+            <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
 		  <tr>
             <td>Refund ID</td>
-            <td><input name="enc_nbr" type="text" value="{$row['refund_id']}">
+            <td><input name="refund_id" type="text" value="{$row['refund_id']}">
             </td>
           </tr>
           <tr>

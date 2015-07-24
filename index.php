@@ -3,7 +3,7 @@ session_start();
 //start session
 
 //uncomment the next line to toggle session dumps on and off
-//include 'dump_all_page_contents.php';
+include 'dump_all_page_contents.php';
  /* include 'lib\refundFunctions.php'; uncommenting this centers the foooter */
    
 include 'lib\functions.php'; /* commenting out this centers the footer */

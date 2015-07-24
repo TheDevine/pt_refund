@@ -85,12 +85,13 @@ include 'connectToDB.php';
 if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for access level 
 	if($_SESSION['access']=='S' OR $_SESSION['access']=='U' OR $_SESSION['access']=='A'){
 		
-		//once user is autheticated, check to see if this form has been submitted
+		//once user is authenticated, check to see if this form has been submitted
 		if(isset($_POST['_submit_check'])){ //form has been submitted
 		
 			if(validateNewRefund()=='valid') //if no errors, create user in db and show success message
 			{
-		
+				
+
 				if(!isset($_POST['urgent'])){
 					$_POST['urgent']=0;
 				}
@@ -224,6 +225,14 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 							
 			} else {
 				
+
+				//show errors at top of page
+				print '<h2 class = "error"> The following errors were encountered:</h2>';
+				print '<ul><li>';
+				print implode('</li><li>', $errors);
+				print '</li></ul>';
+
+				
 				echo 'the refund was not validated <br>';
 				include 'dump_all_page_contents.php';
 
@@ -331,46 +340,70 @@ function validateNewRefund (){
 	$errors = array();
 
 	if (strlen($_POST['amount'])<1){
+
 		$errors[]='Amount cannot be blank';	
 	}
 
 	if (!is_numeric($_POST['amount'])){
+
 		$errors[]='Amount field value must be numeric';	
 	}
 	
 	if (strlen($_POST['payable'])<2){
+
 		$errors[]='Payable names must be at least 2 characters long';	
 	}
 
 	if (strlen($_POST['addr_ln_1'])<1){
+	
 		$errors[]='Address Line 1 cannot be blank';	
 	}
 
 	if (strlen($_POST['city'])<1){
+	
 		$errors[]='City cannot be blank';	
 	}
 
-	if (strlen($_POST['state'])!=2){
+	if (strlen($_POST['state'])!=2){		
+
 		$errors[]='State must be exactly 2 characters long';	
 	}
+	
 
 	if (strlen($_POST['zip'])<5){
+
 		$errors[]='Zip code must be at least 5 characters long';	
 	}
 
-	/*
-	if (strlen($_POST['enc_nbr'])<3){
-		$errors[]='Encounter numbers must be at least 3 characters long';	
+		var_dump($errors);
+
+	if(sizeof($_POST['encounters'])>1){
+		
+			foreach($_POST['encounters'] as $key => $value){
+				
+			if(strlen($value<3)){
+				
+				$errors[]='Encounter Number: '.($key+1).' must be at least three digits long.';	
+
+			}
+	
+		
 	}
-	*/
+		
+	}elseif(strlen($_POST['encounters'][0])<3){
+		
+		$errors[]='Encounter Numbers must be at least three digits long.';	
+
+	}
+	
 
 	if (strlen($_POST['purpose'])<3){
+
 		$errors[]='Purpose cannot be blank';	
 	}
 	
-	//var_dump($errors);
 
-	if($errors) {
+	if(sizeof($errors)) { 
 		return $errors;
 	} else {
 		return 'valid';	
@@ -411,7 +444,7 @@ HEADER;
 		print "<a href =\"logout.php\">Logout</a></div>";
 		
 		print "<table class = \"topMenu\">
-		<tr><td><a href=\"index.php\"  class = \"button\" >Home</td>
+		<tr><td><a href=\"reset_home.php\"  class = \"button\" >Home</td>
 		<td><a href=\"reports.php\"  class = \"button\">Reports</a></td>
 		<td><a href=\"unset_search.php\"  class = \"button\">Search</a></td>
 		<td><a href=\"mngaccount.php\"  class = \"button\">My Account</a></td>";
@@ -721,6 +754,8 @@ print <<<ADDREFUNDPAGE
 				<td> Encounter Number: </td>
 				<td><input name="encounters[]" type="text" value=""></td>
 			</tr>
+			
+			
 		
 	  </tr>
 		  
