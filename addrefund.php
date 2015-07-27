@@ -25,6 +25,9 @@ include 'connectToDB.php';
 		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 		<link rel="stylesheet" href="/resources/demos/style.css">
 		<script>
+		
+
+		
 		$(function() {
 		$( "#datepickerSTART" ).datepicker();
 		});
@@ -70,6 +73,31 @@ include 'connectToDB.php';
 
 		
 		</script>
+		
+
+		<SCRIPT LANGUAGE="JavaScript" TYPE="text/javascript">
+		
+		function removeFocusPersonal()
+			{
+			
+			  document.add_refund.refund_type_personal.blur();
+			  $(this).add_refund.refund_type_personal.blur();
+			  document.getElementById('refund_type_personal').innerText;
+			  document.getElementById('refund_type_personal').blur();
+			}
+			
+			
+			function removeFocusCommercial()
+			{
+			  document.add_refund.refund_type_commercial.blur();
+			  $(this).add_refund.refund_type_personal.blur();
+			}
+				
+				
+
+		</script>
+		
+		
 		</head>
 
 		<body>
@@ -88,7 +116,8 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 		//once user is authenticated, check to see if this form has been submitted
 		if(isset($_POST['_submit_check'])){ //form has been submitted
 		
-			if(validateNewRefund()=='valid') //if no errors, create user in db and show success message
+			$errors=array();
+			if(validateNewRefund($errors)=='valid') //if no errors, create user in db and show success message
 			{
 				
 
@@ -104,10 +133,10 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				
 
 				$query = "INSERT INTO refund (NG_enc_id, created_by, dt_request, urgent, amount, payable, 
-				addr_ln_1,addr_ln_2,city,state,zip,purpose,status,comments,assigned_to) 
+				addr_ln_1,addr_ln_2,city,state,zip,purpose,status,comments,assigned_to,refund_type) 
 				VALUES ('{$_POST['encounters'][0]}','{$_SESSION['userid']}','{$now}',{$_POST['urgent']},
 				'{$_POST['amount']}','{$_POST['payable']}','{$_POST['addr_ln_1']}','{$_POST['addr_ln_2']}',
-				'{$_POST['city']}','{$_POST['state']}','{$_POST['zip']}','{$_POST['purpose']}','NEW','{$_POST['comments']}','{$_SESSION['userid']}')";
+				'{$_POST['city']}','{$_POST['state']}','{$_POST['zip']}','{$_POST['purpose']}','NEW','{$_POST['comments']}','{$_SESSION['userid']}','{$_POST['refund_type']}')";
 				$result = mysqli_query($db,$query);
 				$last_id = mysqli_insert_id($db);
 				
@@ -232,15 +261,16 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				print implode('</li><li>', $errors);
 				print '</li></ul>';
 
+				//var_dump($errors);
 				
-				echo 'the refund was not validated <br>';
-				include 'dump_all_page_contents.php';
+				//echo 'the refund was not validated <br>';
+				//include 'dump_all_page_contents.php';
 
-				die();
+				//die();
 				//echo 'going to the else';
 				//die();
 
-				showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund());
+				showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));
 			}
 			
 			//if errors exist, show page again & fill in values
@@ -335,9 +365,44 @@ function uploadFiles($refundID_just_created){
 	
 
 //Checks that new refund data submitted is valid or returns an array of errors
-function validateNewRefund (){
+function validateNewRefund (&$errors){
 	
-	$errors = array();
+
+	//$errors = array();
+	$ctr_attachments=0;
+	
+	if ($_POST['refund_type']=="Commercial"){
+		//check for at least three uploads
+		foreach($_FILES as $key => $value){
+			
+			if($value['size']){//if size greater than 0, meaning something is attached, increment ctr_attachments;
+				$ctr_attachments++;
+			}
+			
+		}
+		
+		if($ctr_attachments<3){
+			$errors[]='In order to complete the refund creation Commercial Refunds Require at least two documents to be attached.';	
+
+		}
+
+	}else{
+		//check for at least two uploads
+
+		foreach($_FILES as $key => $value){
+			
+			if($value['size']){//if size greater than 0, meaning something is attached, increment ctr_attachments;
+				$ctr_attachments++;
+			}
+			
+		}
+		
+		if($ctr_attachments<2){
+			$errors[]='In order to complete the refund creation Personal Refunds Require at least two documents to be attached.';	
+
+		}	
+		
+	}
 
 	if (strlen($_POST['amount'])<1){
 
@@ -375,7 +440,6 @@ function validateNewRefund (){
 		$errors[]='Zip code must be at least 5 characters long';	
 	}
 
-		var_dump($errors);
 
 	if(sizeof($_POST['encounters'])>1){
 		
@@ -508,11 +572,21 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	}
 	*/
 	
-	$array_of_statesFull= array('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming');
+	$array_of_statesFull= array('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah','Virginia', 'Vermont', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming');
 
-	$array_of_statesShort=array("AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY");
+	$array_of_statesShort=array("AK", "AL","AZ","AR","CA", "CO", "CT", "DE","DC","FL", "GA", "HI","ID", "IL", "IN", "IA", "KS", "KY", "LA","ME","MD","MA","MI", "MN","MS","MO", "MT","NE","NV","NH", "ND", "NJ", "NM",  "NY", "NC", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA","WV", "WI","WY");
 
+	/*
+	
+	
+			  <tr>
+            <td>Type of Refund</td>
+            <td>Commercial<input maxlength="50" name="refund_type_commercial" id="refund_type_commercial" type="checkbox" value ="1" onClick="{removeFocusPersonal()}"> &nbsp;&nbsp;&nbsp;&nbsp;
+			Personal<input maxlength="50" name="refund_type_personal" id="refund_type_personal" type="checkbox" value ="1" onClick="{removeFocusCommercial()}"></td>
 
+          </tr>
+	
+	*/
 
 	if (isset($_POST['amount'])){
 
@@ -527,6 +601,29 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
       <table style="width: 100%" border="1">
         <tbody>
+		
+	          <tr>
+            <td>Type Of Refund</td>
+            <td>
+
+			<select name="refund_type">
+
+ADDREFUNDPAGE;
+
+		print "<option value=\"\"";
+		print "></option>";	
+
+			print "<option value='Commercial' selected>Commercial</option> ";
+			print "<option value='Personal'>Personal</option> ";
+
+		print <<<ADDREFUNDPAGE
+		  </select>
+		</td>
+	  </tr>		  
+		  
+		  
+		  
+		  
           <tr>
             <td>Urgent</td>
             <td><input maxlength="50" name="urgent" type="checkbox" value ="1"><br>
@@ -561,7 +658,6 @@ function showPage($username='', $accessLvl = '', $errors = ''){
             <td>State</td>
             <td>
 
-			<input maxlength="2" name="state" type="text" value="{$_POST['state']}">
 			<select name="state">
 
 ADDREFUNDPAGE;
@@ -573,8 +669,13 @@ ADDREFUNDPAGE;
 
 		foreach ($array_of_statesFull as $key => $value){
 		
-			print "<option value=\"{$array_of_statesShort[$loopstateCtr]}\"";			
-			print ">{$value}</option>";	
+			if($_POST['state']==$array_of_statesShort[$loopstateCtr]){
+				print "<option value=\"{$array_of_statesShort[$loopstateCtr]}\"";			
+				print " selected >{$value}</option>";	
+			}else{
+				print "<option value=\"{$array_of_statesShort[$loopstateCtr]}\"";			
+				print " >{$value}</option>";	
+			}
 			$loopstateCtr++;
 		}
 		
@@ -627,6 +728,12 @@ print <<<ADDREFUNDPAGE
           	<td>Attachment 5</td>
           	<td><input type="file" name="file5"></td>
           </tr>
+		  
+		  	<tr>
+				<td> Encounter Number: </td>
+				<td><input name="encounters[]" type="text" value=""></td>
+			</tr>
+		  
         </tbody>
       </table>
       <input type="hidden" name="_submit_check" value="1" />
@@ -647,6 +754,25 @@ ADDREFUNDPAGE;
       <table style="width: 100%" border="1" class="input_fields_wrap">
 	
         <tbody>
+	  
+	          <tr>
+            <td>Type Of Refund</td>
+            <td>
+
+			<select name="refund_type">
+
+ADDREFUNDPAGE;
+
+		print "<option value=\"\"";
+		print "></option>";	
+
+			print "<option value='Commercial' selected>Commercial</option> ";
+			print "<option value='Personal'>Personal</option> ";
+
+		print <<<ADDREFUNDPAGE
+		  </select>
+		</td>
+	  </tr>		 		  
 
           <tr>
             <td>Urgent</td>

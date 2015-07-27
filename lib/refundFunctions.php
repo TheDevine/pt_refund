@@ -147,7 +147,14 @@ elseif(isset($_POST)){
 		if( $_POST['status']=='ACCOUNTING APPROVAL' && ((!strlen($_POST['check_date'])>0)  || (!strlen($_POST['check_nbr'])>0))) {
 			
 			$errors=array();
-			$errors[]='You must attach a check and indicate the check date in the appropriate fields.';
+			$errors[]='You must attach a check and indicate the check date in the appropriate fields. <br>';
+			if(!is_numeric($_POST['check_nbr'])){
+				$errors[]='Check Numbers can contain numerals only.';
+			}
+		}elseif($_POST['status']=='ACCOUNTING APPROVAL' && !is_numeric($_POST['check_nbr'])){
+			$errors=array();
+			$errors[]='Check Numbers can contain numerals only.';
+
 		}
 		
 		
@@ -1578,7 +1585,13 @@ function executeTheApprove(){
 	
 	///GET DEPT NAME//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+	
+	
+		//TRACK REFUND CHANGES TO STATUS
+		$query_status="SELECT status FROM refund WHERE refund_id={$_POST['refund_id']}";
+		$result_status = mysqli_query($db,$query_status);
+		$rowquery_status=mysqli_fetch_array($result_status);
+		//TRACK REFUND CHANGES TO STATUS
 
 
 		//if(strtoupper($rowquery_dept_name[0])=="ACCOUNTING"){
@@ -1605,7 +1618,14 @@ function executeTheApprove(){
 						$last_id = mysqli_insert_id($db);				
 						
 						$newStatus='ACCOUNTING APPROVAL';
-
+						
+	
+						//TRACK CHANGES
+						$status_before=$rowquery_status['status'];
+						$status_after=$newStatus;
+						trackRefundChanges($status_before,$status_after,$_POST['approval_comments']);		
+						//TRACK THE CHANGES		
+						
 					}else{
 						
 						$query = "UPDATE refund SET 
@@ -1617,6 +1637,15 @@ function executeTheApprove(){
 						$last_id = mysqli_insert_id($db);
 						
 						$newStatus='PAR2 Initial';
+						
+						//echo 'I was just right here';
+						////die();
+						
+						//TRACK CHANGES
+						$status_before=$rowquery_status['status'];
+						$status_after=$newStatus;
+						trackRefundChanges($status_before,$status_after,$_POST['approval_comments']);		
+						//TRACK THE CHANGES		
 						
 					}
 
@@ -1644,6 +1673,14 @@ function executeTheApprove(){
 				}
 				
 				$newStatus='ACCOUNTING APPROVAL';
+
+				//TRACK CHANGES
+				$status_before=$rowquery_status['status'];
+				$status_after=$newStatus;
+				trackRefundChanges($status_before,$status_after,$_POST['approval_comments']);		
+				//TRACK THE CHANGES		
+				
+				
 			}
 	
 		}
@@ -1653,19 +1690,19 @@ function executeTheApprove(){
 				//sets both the status field to voided as well as the voided flag to 1
 				//line 1667
 				
-				include 'dump_all_page_contents.php';
+				//include 'dump_all_page_contents.php';
 				
 				
-				/*
-				            <td>Check Date</td>
-            <td><input name="check_date" type="text" size=25  value="{$row['check_date']}"></td>
-          </tr>
-		  <tr>
-            <td>Check Number</td>
-            <td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
-			
-			*/
-				
+						/*
+									<td>Check Date</td>
+					<td><input name="check_date" type="text" size=25  value="{$row['check_date']}"></td>
+				  </tr>
+				  <tr>
+					<td>Check Number</td>
+					<td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
+					
+					*/
+						
 						$pieces_from = explode("/", $_POST['check_date']);
 						$converted_date_from=date("Y-m-d", mktime(0, 0, 0, $pieces_from[0], $pieces_from[1], $pieces_from[2]));
 						//$entered_dt_from = new DateTime($converted_date_from);
@@ -1679,12 +1716,12 @@ function executeTheApprove(){
 						check_nbr='{$_POST['check_nbr']}'
 						WHERE refund_id = '{$_POST['refund_id']}' ";
 						
-						echo $query;
+						//echo $query;
 						
 						$result = mysqli_query($db,$query);
 						
-						var_dump($result);
-						die();
+						//var_dump($result);
+						//die();
 						$last_id = mysqli_insert_id($db);
 						
 						//echo $query;
@@ -1692,6 +1729,12 @@ function executeTheApprove(){
 						
 						
 						$newStatus='ACCOUNTING APPROVED';
+						
+						//TRACK CHANGES
+						$status_before=$rowquery_status['status'];
+						$status_after=$newStatus;
+						trackRefundChanges($status_before,$status_after,$_POST['approval_comments']);			
+						//TRACK THE CHANGES		
 					
 
 				if (mysqli_error($result)){
@@ -1710,7 +1753,13 @@ function executeTheApprove(){
 						
 						$newStatus='COMPLETED';
 					
-
+				//TRACK CHANGES
+				$status_before=$rowquery_status['status'];
+				$status_after=$newStatus;
+				trackRefundChanges($status_before,$status_after,$_POST['approval_comments']);		
+	
+				//TRACK THE CHANGES		
+				
 				if (mysqli_error($result)){
 					print mysqli_error($result);
 				}
@@ -2230,14 +2279,14 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
           </tr>
 		  <tr>
             <td>CHECK Date</td>
-            <td><input name="check_date" type="text" size=25 id="datepickerSTART" value="{$row['check_date']}"></td>
+            <td><input name="check_date" type="text" size=25 id="datepickerSTART" value=""></td>
           </tr>
 		  <tr>
             <td>Check Number</td>
-            <td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
+            <td><input name="check_nbr" type="text" size=25  value=""></td>
           </tr>
-
 		  
+
         </tbody>
       </table>
       <input type="hidden" name="_approve_submit" value="1" />
@@ -2360,7 +2409,15 @@ EDITUSERPAGE;
 EDITUSERPAGE;
 
 		if($rowquery_dept_id['dept_id']==4){
+	
+	
 	print <<<EDITUSERPAGE
+	
+	      <tr>
+            <td>Refund Approval Comments</td>
+            <td><input name="approval_comments" type="textarea" rows="10" value=""></td>
+          </tr>
+
 		  <tr>
             <td>Check Date</td>
             <td><input name="check_date" type="text" readonly size=25 value="{$row['check_date']}"></td>
@@ -2371,22 +2428,39 @@ EDITUSERPAGE;
           </tr>
 
 EDITUSERPAGE;
-		}else{
+		}elseif($rowquery_dept_id['dept_id']==2){
 			
 
 			
 	print <<<EDITUSERPAGE
+	
+	      <tr>
+            <td>Refund Approval Comments</td>
+            <td><input name="approval_comments" type="textarea" rows="10" value=""></td>
+          </tr>
+
 					  <tr>
             <td>Check Date</td>
-            <td><input name="check_date" type="text" size=25 id="datepickerSTART" value="{$row['check_date']}"></td>
+            <td><input name="check_date" type="text" size=25 id="datepickerSTART" value=""></td>
           </tr>
 		  <tr>
             <td>Check Number</td>
-            <td><input name="check_nbr" type="text" size=25 value="{$row['check_nbr']}"></td>
+            <td><input name="check_nbr" type="text" size=25 value=""></td>
           </tr>
 EDITUSERPAGE;
 			
-		}	  
+		}else{		  
+	print <<<EDITUSERPAGE
+	  
+        <tr>
+            <td>Refund Approval Comments</td>
+            <td><input name="approval_comments" type="textarea" rows="10" value=""></td>
+          </tr>
+
+
+EDITUSERPAGE;
+
+}	  
 		  
 
 	print <<<EDITUSERPAGE
@@ -2398,9 +2472,7 @@ EDITUSERPAGE;
 
 EDITUSERPAGE;
 		  
-
-
-		
+	
 		if($rowquery_dept_id['dept_id']==4){
 	print <<<EDITUSERPAGE
 
@@ -2416,11 +2488,15 @@ EDITUSERPAGE;
 EDITUSERPAGE;
 		
 		}else{
+			
+			
 				print <<<EDITUSERPAGE
 
 	  <br/>
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">APPROVE Refund</button>
 EDITUSERPAGE;
+
+
 			
 		}
 	 
@@ -4413,7 +4489,9 @@ print '<table border="1" cellpadding = "3">
 
 $current_date=date("Y-m-d H:i:s");  
 
+
 $result = mysqli_query($db,$query); 
+
 
 //$row = mysqli_fetch_array($result);
 
@@ -4456,21 +4534,8 @@ while ($row = mysqli_fetch_array($result)){
 	<td>'.$row['payable'].'</td>';
 	print '<td>$ '.$row['amount'].'</td>';
 	
-	if(!$row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>NEW</td>';
-	}elseif(!$row['accounting_approval'] && $row['billing_initial_approval']){
-		print '<td>ACCOUNTING APPROVAL</td>';
-	}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>ACCOUNTING APPROVED</td>';
-	}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && $row['billing_final_approval']){
-		print '<td>COMPLETED</td>';
-	}elseif($row['status']=="REJECTED"){
-		print '<td>REJECTED</td>';
-	}elseif($row['status']=="VOIDED"){
-		print '<td>VOIDED</td>';
-	}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-		print '<td>ACCOUNTING APPROVED</td>';
-	}
+	print '<td>COMPLETED</td>';
+	
 
 
 	print '<td>'.$refund_assigned_to.'</td>';
@@ -5388,12 +5453,18 @@ function sendEmailBillingInitialApproved(){
 
 }
 
-function trackRefundChanges($status_before,$status_after){
+function trackRefundChanges($status_before,$status_after,$comments){
+	include 'connectToDB.php'; 
+	
 	$now = date("Y-m-d H:i:s");	
 	$queryStatusChange = "INSERT INTO refund_changes 
-	(refund_id, status_before, status_after, date, name) 
-	VALUES ('{$_POST['refund_id']}','{$status_before}','{$status_after}','{$now}','{$_SESSION['userid']}')";
+	(refund_id, status_before, status_after, date, name,comments) 
+	VALUES ('{$_POST['refund_id']}','{$status_before}','{$status_after}','{$now}','{$_SESSION['userid']}','{$comments}')";
+	echo $queryStatusChange;
+	
 	$result = mysqli_query($db,$queryStatusChange);
+	
+	var_dump($result);
 	
 }
 

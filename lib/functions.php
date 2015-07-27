@@ -468,10 +468,11 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	//END FULL RESULT SET
 	
 	
-	
+	/*
 	echo 'the query was ';
 	echo $query ;
 	echo '<br>';
+	*/
 	
 	if($sizeOfResultSet){
 		
@@ -566,7 +567,11 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	echo '<center><b>You currently have no Active Refunds for approval!</b></center>';
 	
 }
-	print '<h3 align="center"><a href="addrefund.php">Create a NEW Refund Request</a></h3>';
+
+	if ($rowquery_dept_id['dept_id']==3){ //3 is PAR2, only PAR2 creates
+
+		print '<h3 align="center"><a href="addrefund.php">Create a NEW Refund Request</a></h3>';
+	}
 
 	showFooter();
 	
@@ -639,7 +644,7 @@ function showEditPage($username='', $accessLvl = '', $errors = ''){ //page where
           <tr>
             <td>Date Required</td>
 
-			<td><input type="text" name="dt_required" id="datepickerSTART" value ="{$row['dt_required']}"></td>
+			<td><input type="text" name="dt_request" id="datepickerSTART" value ="{$row['dt_request']}"></td>
 
           </tr>
           <tr>

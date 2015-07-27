@@ -20,7 +20,7 @@ include 'connectToDB.php';
 //include 'validateLogin.php';   //uncomment this to show the first edit screen
 //require_once "Mail.php"; (File doesn't exist)
 
-include 'dump_all_page_contents.php'; 
+//include 'dump_all_page_contents.php'; 
 
 
 if (array_key_exists('userid', $_SESSION)){	//If user is logged in show page
