@@ -386,16 +386,19 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	// 'ACCOUNTING APPROVAL'
 	
 	$specifier="";
-	if(strtoupper($rowquery_dept_name[0])=='PAR2'){
-		
-		$specifier= " status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
-	}elseif(strtoupper($rowquery_dept_name[0])=='ACCOUNTING'){
-		$specifier= " status= 'ACCOUNTING APPROVAL' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
-	}elseif(strtoupper($rowquery_dept_name[0])=='PAR1'){
-		$specifier= " status= 'ACCOUNTING APPROVED' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
-	}else{ //because currently isnt reflective of new dept status structure
-		$specifier= " status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
+	if($rowquery_dept_name[0]=='Admin'){
+		//$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
+		//$specifier= " WHERE 1=1 ";
+		$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' ";
 
+	}elseif(strtoupper($rowquery_dept_name[0])=='ACCOUNTING'){
+		$specifier= " WHERE status= 'ACCOUNTING APPROVAL' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
+	}elseif(strtoupper($rowquery_dept_name[0])=='PAR1'){
+		$specifier= " WHERE status= 'ACCOUNTING APPROVED' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
+	}elseif(strtoupper($rowquery_dept_name[0])=='PAR2'){
+		$specifier= " WHERE created_by='{$_SESSION['userid']}' ";
+		//$specifier= " WHERE U.dept_id='1' AND created_by=='{$_SESSION['userid']}' ";
+		//PAR2 can only create, so they are presented with only the refunds PAR2s have created	
 	}		
 	
 	
@@ -409,8 +412,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			FROM refund AS R 
 			INNER JOIN 
 			users AS U 
-			ON R.assigned_to = U.user_id 
-			WHERE ".$specifier."
+			ON R.assigned_to = U.user_id".$specifier."
 			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		
 		}else{
@@ -418,8 +420,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			FROM refund AS R 
 			INNER JOIN 
 			users AS U 
-			ON R.assigned_to = U.user_id 
-			WHERE ".$specifier."
+			ON R.assigned_to = U.user_id".$specifier."
 			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}
 
@@ -432,21 +433,23 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			FROM refund AS R 
 			INNER JOIN 
 			users AS U 
-			ON R.assigned_to = U.user_id 
-			WHERE ".$specifier."
+			ON R.assigned_to = U.user_id".$specifier."
 			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}else{
 			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id,payable,accounting_approval,billing_initial_approval,billing_final_approval,urgent
 			FROM refund AS R 
 			INNER JOIN 
 			users AS U 
-			ON R.assigned_to = U.user_id 
-			WHERE ".$specifier."
+			ON R.assigned_to = U.user_id".$specifier."
 			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 
 		}
 
 	}
+	
+	
+	//echo $query;
+	//echo '<br>';
 	
 	$result = mysqli_query($db,$query); 
 	$row = @mysqli_fetch_array($result);
@@ -458,8 +461,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 			FROM refund AS R 
 			INNER JOIN 
 			users AS U 
-			ON R.assigned_to = U.user_id 
-			WHERE ".$specifier;
+			ON R.assigned_to = U.user_id".$specifier;
 			
 			
 	$resultFull = mysqli_query($db,$queryFullResultSet); 
@@ -474,10 +476,14 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	echo '<br>';
 	*/
 	
+	
 	if($sizeOfResultSet){
 		
-
-	    print '<p align="center"> All '.$rowquery_dept_name[0].' Refund Requests:</p>';
+		if(strtoupper($rowquery_dept_name[0])=="PAR2"){
+			 print '<p align="center"> Billing Refund Requests which you\'ve Requested:</p>';
+		}else{
+			print '<p align="center"> All '.$rowquery_dept_name[0].' Refund Requests:</p>';
+		}
 
 		print '<div align = "center">';
 		print '<table border="1" cellpadding = "3"><tr>

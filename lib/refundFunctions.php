@@ -2312,7 +2312,7 @@ EDITUSERPAGE;
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">ATTACH CHECK and ACCOUNTING APPROVE REFUND</button>
 EDITUSERPAGE;
 		
-		}else{
+		}elseif($rowquery_dept_id['dept_id']==1){ //only admins can approve refunds in the initial stages
 				print <<<EDITUSERPAGE
 
 	  <br/>
@@ -5460,7 +5460,8 @@ function trackRefundChanges($status_before,$status_after,$comments){
 	$queryStatusChange = "INSERT INTO refund_changes 
 	(refund_id, status_before, status_after, date, name,comments) 
 	VALUES ('{$_POST['refund_id']}','{$status_before}','{$status_after}','{$now}','{$_SESSION['userid']}','{$comments}')";
-	echo $queryStatusChange;
+	
+	//echo $queryStatusChange;
 	
 	$result = mysqli_query($db,$queryStatusChange);
 	
