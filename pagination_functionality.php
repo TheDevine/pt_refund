@@ -292,7 +292,7 @@ function displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL
 		$newOffSet=0;
 	}
 	
-		if(!$tempOrigStartPosition>0 && !sizeof($URL_String_FORWARD)){
+		if(isset($tempOrigStartPosition) && !$tempOrigStartPosition>0 && !sizeof($URL_String_FORWARD)){
 
 			echo 'You currently have no active refunds!';
 		}

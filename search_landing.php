@@ -29,7 +29,35 @@ refund_search_termValue 170 (now 344)
 refund_search_termStatus 283 (now 450)
 refund_search_termDate 415 (now 577)
 */
+?>
 
+
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>jQuery UI Datepicker - Default functionality</title>
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+
+<?php
 
 
 if(!strpos($_SERVER['HTTP_REFERER'],'?') && !(isset($_POST['Search'])) && !strpos($_SERVER['REQUEST_URI'],'?')>0  ){

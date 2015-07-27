@@ -142,8 +142,47 @@ elseif(isset($_POST)){
 	
 	elseif(isset($_POST['_approve_submit']) && $_POST['_approve_submit']!="" && $_POST['_approve_submit']!=NULL){ 
 
-		executeTheApprove(); //this function doesn't seem to exist yet
+		//include 'dump_all_page_contents.php';
+		//die();
+		if( $_POST['status']=='ACCOUNTING APPROVAL' && ((!strlen($_POST['check_date'])>0)  || (!strlen($_POST['check_nbr'])>0))) {
+			
+			$errors=array();
+			$errors[]='You must attach a check and indicate the check date in the appropriate fields.';
+		}
+		
+		
+		if($errors){
+			
+			
+			//echo $_SESSION['return_URI'];
+			
+		//save for when you go back to the form pre-fill
+		//$_SESSION['SAVE_POST']=$_POST;
+		
+		//show errors at center of page
+		print '<center>';
+		print '<h2 class = "error"> The following errors were encountered:</h2>';
+		print '<ul><li>';
+		print implode('</li><li>', $errors);
+		print '</li></ul>';
+		echo "Please press the 'Correct Errors' below to correct these errors.";
+		echo '<br>';
+		echo '<br>';
+		
+		print <<<EDITUSERPAGE
+		<a href="{$_SESSION['return_URI']}"><button value="Correct Errors" name="Correct Errors">Correct Errors</button></a>
+EDITUSERPAGE;
+		print '</center>';
+		
+		
 		die();
+
+	}else{
+		
+		//$_SESSION['SAVE_POST']="";//clear out the saved array
+		executeTheApprove(); //this function doesn't seem to exist yet
+	}
+	
 	}
 	
 	
@@ -246,14 +285,15 @@ function validateRefundChanges(){
 	$errors = array();
 	$current_date=date("Y-m-d H:i:s");  
 	
-	if (strlen($_POST['dt_required'])<8 || !is_numeric($_POST['dt_required']) ){
+	//was dt_required previously
+	if (strlen($_POST['dt_request'])<8 || !is_numeric($_POST['dt_request']) ){
 		$errors[]='Please Enter a Valid Date <br> 
 		numeric only-no spaces, dashes or slashes.'; //add better date validation logic	
 	}else{
 	
-		$refund_month=substr($_POST['dt_required'],0,2);
-		$refund_day=substr($_POST['dt_required'],2,2);
-		$refund_year=substr($_POST['dt_required'],4);
+		$refund_month=substr($_POST['dt_request'],0,2);
+		$refund_day=substr($_POST['dt_request'],2,2);
+		$refund_year=substr($_POST['dt_request'],4);
 		
 		$converted_date=date("Y-m-d H:i:s", mktime(0, 0, 0, $refund_month, $refund_day, $refund_year));
 		$today_dt = new DateTime($current_date);
@@ -855,7 +895,7 @@ EDITUSERPAGE;
           <tr>
             <td>Date</td>
 
-            <td><input name="dt_required" type="text" id="datepickerSTART" value ="{$row['dt_required']}"> 
+            <td><input name="dt_request" type="text" id="datepickerSTART" value ="{$row['dt_request']}"> 
 			<font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
@@ -864,7 +904,7 @@ EDITUSERPAGE;
           	<td>$<input maxlength="50" name="amount" type="text" value =" {$row['amount']}"><br />
           </tr>
           <tr>
-            <td>Check Payable fdsfdsTo:</td>
+            <td>Check Payable To:</td>
             <td><input name="payable" type="text" value="{$row['payable']}">
             </td>
           </tr>
@@ -931,14 +971,7 @@ EDITUSERPAGE;
             <td>Current Status</td>
             <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
           </tr>
-		  <tr>
-            <td>Check Date</td>
-            <td><input name="check_date" type="text" size=25  value="{$row['check_date']}"></td>
-          </tr>
-		  <tr>
-            <td>Check Number</td>
-            <td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
-          </tr>
+		  
 
         </tbody>
       </table>
@@ -976,6 +1009,13 @@ EDITUSERPAGE;
 
 	}else{
 		
+		//include 'dump_all_page_contents.php';
+	
+		
+		$_SESSION['return_URI']=$_SERVER['REQUEST_URI'];
+		
+
+		
 	print <<<EDITUSERPAGE
 <h2 align="center">EDIT Refund</h2>
 <a href="reports.php">Back to Refunds</a>
@@ -984,9 +1024,9 @@ EDITUSERPAGE;
       <table style="width: 100%" border="1">
         <tbody>
           <tr>
-            <td>Date</td>
+            <td>Date Requested</td>
 
-            <td><input name="dt_required" type="text" readonly value ="{$row['dt_required']}"> <font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            <td><input name="dt_request" type="text" readonly value ="{$row['dt_request']}"> <font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
           <tr>
@@ -994,7 +1034,7 @@ EDITUSERPAGE;
           	<td>$<input maxlength="50" name="amount" type="text" readonly value =" {$row['amount']}"><br />
           </tr>
  <tr>
-            <td>Check Payable fdsfdsTo:</td>
+            <td>Check Payable To:</td>
             <td><input name="payable" type="text" readonly value="{$row['payable']}">
             </td>
           </tr>
@@ -1041,14 +1081,7 @@ EDITUSERPAGE;
             <td>Current Status</td>
             <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
           </tr>
-		  		   <tr>
-            <td>Check Date</td>
-            <td><input name="check_date" type="text" size=25  value="{$row['check_date']}"></td>
-          </tr>
-		  		   <tr>
-            <td>Check Number</td>
-            <td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
-          </tr>
+
 		  </tbody>
       </table>
       <input type="hidden" name="_edit_submit" value="1" />
@@ -1078,7 +1111,7 @@ EDITUSERPAGE;
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_rej_submit">Reject Refund</button>
 
 EDITUSERPAGE;
-	 
+	
 	print <<<EDITUSERPAGE
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_app_submit">Approve Refund</button>
 EDITUSERPAGE;
@@ -1168,7 +1201,7 @@ EDITUSERPAGE;
 
 			print <<<EDITUSERPAGE
 			<h2 align="center">Assign Refund</h2>
-			<a href="reports.php">Back to Refunds</a>
+			<a href="index.php">Back to Refunds</a>
 			<br/><br/>
 				<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
 			  <table style="width: 100%" border="1">
@@ -1179,7 +1212,7 @@ EDITUSERPAGE;
 				</tr>
 				  <tr>
 					<td>Date</td>
-					<td><input name="dt_required" type="text" readonly value ="{$row['dt_required']}"> <font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+					<td><input name="dt_request" type="text" readonly value ="{$row['dt_request']}"> <font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
 					</td>
 				  </tr>
 				  <tr>
@@ -1313,7 +1346,7 @@ function showDelPage($username='', $accessLvl = '', $errors = ''){ //page where 
 	
 	print <<<EDITUSERPAGE
 <h2 align="center">DO I EVER CALL THIS PAGE?? Refund</h2>
-<a href="reports.php">Back to Refunds</a>
+<a href="index.php">Back to Refunds</a>
 <br/><br/>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
@@ -1324,7 +1357,7 @@ function showDelPage($username='', $accessLvl = '', $errors = ''){ //page where 
 		</tr>
           <tr>
             <td>Date</td>
-            <td><input name="dt_required" type="text" value ="{$row['dt_required']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            <td><input name="dt_request" type="text" value ="{$row['dt_request']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
           <tr>
@@ -1432,7 +1465,7 @@ function execute_the_reject(){
 				$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
 				
 				//IF THE REFUND WAS MARKED URGENT: email Erika as well
-				if($_POST['urgent']){ //verify that this works as intended
+				if($_POST['urgent']=='y'){ //verify that this works as intended
 				
 					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." has been rejected. <br>  This refund is marked as URGENT.";
 					$from = "Patient Refund <noreply@chcb.org>";
@@ -1519,6 +1552,8 @@ function execute_the_reject(){
 
 function executeTheApprove(){
 	
+	
+	
 	echo 'am i over here';
 	
 	showHeader($username, $accessLvl);
@@ -1564,7 +1599,7 @@ function executeTheApprove(){
 						$query = "UPDATE refund SET 
 						modified_by='{$_SESSION['userid']}', 
 						modified_dt='{$now}', 
-						status='Accounting Approval' 
+						status='ACCOUNTING APPROVAL' 
 						WHERE refund_id = '{$_POST['refund_id']}' ";
 						$result = mysqli_query($db,$query);
 						$last_id = mysqli_insert_id($db);				
@@ -1616,14 +1651,45 @@ function executeTheApprove(){
 	
 				//update the record in the DB as voided
 				//sets both the status field to voided as well as the voided flag to 1
+				//line 1667
 				
+				include 'dump_all_page_contents.php';
+				
+				
+				/*
+				            <td>Check Date</td>
+            <td><input name="check_date" type="text" size=25  value="{$row['check_date']}"></td>
+          </tr>
+		  <tr>
+            <td>Check Number</td>
+            <td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
+			
+			*/
+				
+						$pieces_from = explode("/", $_POST['check_date']);
+						$converted_date_from=date("Y-m-d", mktime(0, 0, 0, $pieces_from[0], $pieces_from[1], $pieces_from[2]));
+						//$entered_dt_from = new DateTime($converted_date_from);
+
+						//SET the check and check number and update the status, now it is awaiting PAR1 final completion
 						$query = "UPDATE refund SET 
 						modified_by='{$_SESSION['userid']}', 
 						modified_dt='{$now}', 
-						status='ACCOUNTING APPROVED' 
+						status='ACCOUNTING APPROVED',
+						check_date='{$converted_date_from}',
+						check_nbr='{$_POST['check_nbr']}'
 						WHERE refund_id = '{$_POST['refund_id']}' ";
+						
+						echo $query;
+						
 						$result = mysqli_query($db,$query);
+						
+						var_dump($result);
+						die();
 						$last_id = mysqli_insert_id($db);
+						
+						//echo $query;
+						
+						
 						
 						$newStatus='ACCOUNTING APPROVED';
 					
@@ -1661,8 +1727,8 @@ function executeTheApprove(){
 		$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
 		
 		//IF THE REFUND WAS MARKED URGENT: email Erika as well
-		if($_POST['urgent']){ //verify that this works as intended
-		
+		if($_POST['urgent']=='y'){ //verify that this works as intended
+
 			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of ".$_POST['amount'] ." has been approved. <br>
 			The new status for this refund is: ".$newStatus." <br> This refund is marked as URGENT.";
 			$from = "Patient Refund <noreply@chcb.org>";
@@ -1697,9 +1763,10 @@ function executeTheApprove(){
 			mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org)
 			
 		}else{
+			
 
 			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of ".$_POST['amount'] ." has been approved. <br>
-			The new status for this refund is: ".$newStatus." <br> This refund is marked as URGENT.";
+			The new status for this refund is: ".$newStatus;
 			$from = "Patient Refund <noreply@chcb.org>";
 			$subject = "Updated Patient Refund Request";
 			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
@@ -1744,6 +1811,8 @@ function executeTheApprove(){
 	echo '<br>';
 
 	die();
+	
+	
 
 }
 
@@ -1834,7 +1903,7 @@ function showVoidPage($username='', $accessLvl = '', $errors = ''){ //page where
 
 	print <<<EDITUSERPAGE
 <h2 align="center">Void Refund</h2>
-<a href="reports.php">Back to Refunds</a>
+<a href="index.php">Back to Refunds</a>
 <br/><br/>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
@@ -1846,7 +1915,7 @@ function showVoidPage($username='', $accessLvl = '', $errors = ''){ //page where
 		</tr>
           <tr>
             <td>Date</td>
-            <td><input name="dt_required" readonly type="text" value ="{$row['dt_required']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            <td><input name="dt_request" readonly type="text" value ="{$row['dt_request']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
           <tr>
@@ -1943,7 +2012,7 @@ function showRejPage($username='', $accessLvl = '', $errors = ''){ //page where 
 
 	print <<<EDITUSERPAGE
 <h2 align="center">Reject The Refund</h2>
-<a href="reports.php">Back to Refunds</a>
+<a href="index.php">Back to Refunds</a>
 <br/><br/>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
@@ -1954,7 +2023,7 @@ function showRejPage($username='', $accessLvl = '', $errors = ''){ //page where 
           </tr>
           <tr>
             <td>Date</td>
-            <td><input name="dt_required" readonly type="text" value ="{$row['dt_required']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            <td><input name="dt_request" readonly type="text" value ="{$row['dt_request']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
           <tr>
@@ -2032,6 +2101,38 @@ EDITUSERPAGE;
 
 function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page where user will actually approve user information
 
+
+?>
+
+
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>jQuery UI Datepicker - Default functionality</title>
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+
+<?php
+
+
 	showHeader($username, $accessLvl);
 	include 'connectToDB.php'; 
 	
@@ -2041,11 +2142,11 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
 
 	if(isset($_GET['refund_id'])){
 		$query = "SELECT NG_enc_id, U.first_name, U.last_name, status, dt_request, dt_required, payable, 
-		addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments,refund_id FROM refund 
+		addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments,refund_id,check_date,check_nbr FROM refund 
 		AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_GET['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 	}else{
 		$query = "SELECT NG_enc_id, U.first_name, U.last_name, status, dt_request, dt_required, payable, 
-		addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments,refund_id FROM refund 
+		addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments,refund_id,check_date,check_nbr FROM refund 
 		AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_POST['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		
 	}
@@ -2053,11 +2154,143 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
 	$result = mysqli_query($db,$query); 
 	$row = mysqli_fetch_array($result);
 	
-
-
+		if($errors || isset($_SESSION['SAVE_POST'])){
+			
+			echo 'here';
+			
+			var_dump($_SESSION['SAVE_POST']);
+			
 	print <<<EDITUSERPAGE
 <h2 align="center">Approve Refund</h2>
-<a href="reports.php">Back to Refunds</a>
+<a href="index.php">Back to Refunds</a>
+<br/><br/>
+		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
+      <table style="width: 100%" border="1">
+        <tbody>
+		<tr>
+		<td><b>Refund ID</b></td>
+		<td><input maxlength="50" readonly name="refund_id" type="text" value ="{$_SESSION['SAVE_POST']['refund_id']}"><br />
+		</tr>
+          <tr>
+            <td>Date</td>
+            <td><input name="dt_request" type="text" readonly value ="{$row['dt_request']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            </td>
+          </tr>
+          <tr>
+          	<td>Amount</td>
+          	<td>$<input maxlength="50" name="amount" readonly type="text" value =" {$row['amount']}"><br />
+          </tr>
+          <tr>
+            <td>Check Payable To:</td>
+            <td><input name="payable" type="text" readonly value="{$row['payable']}">
+            </td>
+          </tr>
+          <tr>
+            <td>Address Line 1</td>
+            <td><input name="addr_ln_1" type="text" readonly value="{$row['addr_ln_1']}">
+            </td>
+          </tr>
+          <tr>
+            <td>Address Line 2</td>
+            <td><input name="addr_ln_2" type="text" readonly value="{$row['addr_ln_2']}">
+            </td>
+          </tr>
+          <tr>
+            <td>City</td>
+            <td><input  name="city" type="text" readonly value="{$row['city']}">
+            </td>
+          <tr>
+            <td>State</td>
+            <td><input maxlength="2" name="state" type="text" readonly value="{$row['state']}">
+            </td>
+          </tr>
+          <tr>
+            <td>Zip</td>
+            <td><input  maxlength="10" name="zip" type="text" readonly value="{$row['zip']}">
+            </td>
+          </tr>
+          <tr>
+            <td>Encounter Number</td>
+            <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
+            </td>
+          </tr>
+          <tr>
+            <td>Purpose</td>
+            <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
+            </td>
+          </tr>
+          <tr>
+            <td>Comments</td>
+            <td><input name="comments" type="text" readonly value="{$row['comments']}">
+            </td>
+          </tr>
+		   <tr>
+            <td>Current Status</td>
+            <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
+          </tr>
+		  <tr>
+            <td>CHECK Date</td>
+            <td><input name="check_date" type="text" size=25 id="datepickerSTART" value="{$row['check_date']}"></td>
+          </tr>
+		  <tr>
+            <td>Check Number</td>
+            <td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
+          </tr>
+
+		  
+        </tbody>
+      </table>
+      <input type="hidden" name="_approve_submit" value="1" />
+      <input type="hidden" name="refund_id" value = "{$row['refund_id']}">
+EDITUSERPAGE;
+
+		$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
+		$result_dept_id = mysqli_query($db,$query_dept_id);
+		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
+
+		
+		if($rowquery_dept_id['dept_id']==4){
+	print <<<EDITUSERPAGE
+
+	  <br/>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">Finalize Refund as COMPLETED</button>
+EDITUSERPAGE;
+		
+		}elseif($rowquery_dept_id['dept_id']==2){
+	print <<<EDITUSERPAGE
+
+	  <br/>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">ATTACH CHECK and ACCOUNTING APPROVE REFUND</button>
+EDITUSERPAGE;
+		
+		}else{
+				print <<<EDITUSERPAGE
+
+	  <br/>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">APPROVE Refund</button>
+EDITUSERPAGE;
+			
+		}
+	 
+	print <<<EDITUSERPAGE
+
+	 </form>
+EDITUSERPAGE;
+
+	showFooter();
+	
+
+		}
+	else{
+		
+
+		$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
+		$result_dept_id = mysqli_query($db,$query_dept_id);
+		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
+		
+	print <<<EDITUSERPAGE
+<h2 align="center">Approve Refund</h2>
+<a href="index.php">Back to Refunds</a>
 <br/><br/>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
@@ -2067,8 +2300,8 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
 		<td><input maxlength="50" readonly name="refund_id" type="text" value ="{$row['refund_id']}"><br />
 		</tr>
           <tr>
-            <td>Date</td>
-            <td><input name="dt_required" type="text" readonly value ="{$row['dt_required']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            <td>Date Requested</td>
+            <td><input name="dt_request" type="text" readonly value ="{$row['dt_request']}"><font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
           <tr>
@@ -2124,19 +2357,86 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
             <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
           </tr>
 
+EDITUSERPAGE;
+
+		if($rowquery_dept_id['dept_id']==4){
+	print <<<EDITUSERPAGE
+		  <tr>
+            <td>Check Date</td>
+            <td><input name="check_date" type="text" readonly size=25 value="{$row['check_date']}"></td>
+          </tr>
+		  <tr>
+            <td>Check Number</td>
+            <td><input name="check_nbr" type="text" size=25 readonly  value="{$row['check_nbr']}"></td>
+          </tr>
+
+EDITUSERPAGE;
+		}else{
+			
+
+			
+	print <<<EDITUSERPAGE
+					  <tr>
+            <td>Check Date</td>
+            <td><input name="check_date" type="text" size=25 id="datepickerSTART" value="{$row['check_date']}"></td>
+          </tr>
+		  <tr>
+            <td>Check Number</td>
+            <td><input name="check_nbr" type="text" size=25 value="{$row['check_nbr']}"></td>
+          </tr>
+EDITUSERPAGE;
+			
+		}	  
 		  
+
+	print <<<EDITUSERPAGE
+	  
         </tbody>
       </table>
       <input type="hidden" name="_approve_submit" value="1" />
       <input type="hidden" name="refund_id" value = "{$row['refund_id']}">
 
+EDITUSERPAGE;
+		  
+
+
+		
+		if($rowquery_dept_id['dept_id']==4){
+	print <<<EDITUSERPAGE
+
+	  <br/>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">Finalize Refund as COMPLETED</button>
+EDITUSERPAGE;
+		
+		}elseif($rowquery_dept_id['dept_id']==2){
+	print <<<EDITUSERPAGE
+
+	  <br/>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">ATTACH CHECK and ACCOUNTING APPROVE REFUND</button>
+EDITUSERPAGE;
+		
+		}else{
+				print <<<EDITUSERPAGE
+
 	  <br/>
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="approve" name="Approve">APPROVE Refund</button>
-	  </form>
 EDITUSERPAGE;
+			
+		}
+	 
+	print <<<EDITUSERPAGE
+
+	 </form>
+EDITUSERPAGE;
+
 	showFooter();
+	
+	
+}
 
 }
+
+
 
 
 function approveTheRefund(){
@@ -3055,7 +3355,7 @@ function showSearchPage($username='', $accessLvl = '', $errors = ''){
 	
 	print <<<EDITUSERPAGE
 <center><h2 align="center">Search Refunds</h2>
-<a href="reports.php">Back to Refunds</a>
+<a href="index.php">Back to Refunds</a>
 <br/><br/>
 	Please select the term you would like to search for from the Drop down menu, <br> then type value you are interested in matching pertaining to that term and click "Search Refunds" 
 <br><br>	
