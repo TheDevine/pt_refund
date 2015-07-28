@@ -1,0 +1,191 @@
+
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>Adding Multiple Fields</title>
+
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		
+		$(document).ready(function() {
+		var max_fields      = 10; //maximum input boxes allowed
+		var wrapper         = $(".input_fields_wrap"); //Fields wrapper
+		var add_button      = $(".add_field_button"); //Add button ID
+
+		
+		
+		var x = 1; //initlal text box count
+		$(add_button).click(function(e){ //on add input button click
+		e.preventDefault();
+		if(x < max_fields){ //max input box allowed
+			x++; //text box increment
+			$(wrapper).append('<tr><td></td><td><input type="text" name="mytext[]"/><a href="#" class="remove_field">Remove</a></td></tr>'); //add input box
+		}
+		});
+
+		$(wrapper).on("click",".remove_field", function(e){ //user click on remove text
+		e.preventDefault(); $(this).parent('div').remove(); x--;
+		})
+		});
+
+
+		
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+		
+	
+
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>jQuery UI Datepicker - Default functionality</title>
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+
+		<html lang="en">
+		<head>
+		<meta charset="utf-8">
+		<title>jQuery UI Datepicker - Default functionality</title>
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		</script>
+		</head>
+
+		<body>
+			
+		</body>
+		</html>
+		
+	<HTML>
+	<HEAD>
+		<link rel="stylesheet" type="text/css" href="refundStyle.css">
+		<TITLE>CHCB Patient Refund Manager</TITLE>
+	</head>
+	<body>
+		<table id="head"><tr><td><img src = "logo.png" class="logo" /><td><td><h1 class="title">Patient Refund Manager</h1></td></tr></table><h2 align="center">Edit Refund</h2>
+<a href="http://vdi-ddevine/pt_refund/index.php">Back</a>
+<br/><br/>
+		<form method="POST" action="/pt_refund/search_landing.php" name="update_refund">
+      <table style="width: 100%" border="1">
+        <tbody>
+			<tr>
+          	<td><b>Refund ID</b></td>
+          	<td><input maxlength="50" readonly name="refund_id" type="text" value ="11"><br />
+          </tr>
+          <tr>
+            <td>Date</td>
+
+            <td><input name="dt_request" type="text" id="datepickerSTART" value ="2015-06-09 16:36:31"> 
+			<font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            </td>
+          </tr>
+          <tr>
+          	<td>Amount</td>
+          	<td>$<input maxlength="50" name="amount" type="text" value =" 123.00"><br />
+          </tr>
+          <tr>
+            <td>Check Payable To:</td>
+            <td><input name="payable" type="text" value="Derek Michael Devine">
+            </td>
+          </tr>
+          <tr>
+            <td>Address Line 1</td>
+            <td><input name="addr_ln_1" type="text" value="16 P">
+            </td>
+          </tr>
+          <tr>
+            <td>Address Line 2</td>
+            <td><input name="addr_ln_2" type="text" value="">
+            </td>
+          </tr>
+          <tr>
+            <td>City</td>
+            <td><input  name="city" type="text" value="Burlington">
+            </td>
+          <tr>
+            <td>State</td>
+            <td><input maxlength="2" name="state" type="text" value="VT">
+            </td>
+          </tr>
+          <tr>
+            <td>Zip</td>
+            <td><input  maxlength="10" name="zip" type="text" value="12321">
+            </td>
+          </tr>
+		   <tr>
+            <td>Encounter Number</td>
+            <td><input name="enc_nbr" type="text" readonly value="13221">
+            </td>
+          </tr>		 
+
+          <tr>
+            <td>Purpose</td>
+            <td><input name="purpose" type="text" value="test">
+            </td>
+          </tr>
+          <tr>
+            <td>Comments</td>
+            <td><input name="comments" type="text" value="out">
+            </td>
+          </tr>
+		   <tr>
+            <td>Current Status</td>
+            <td><input name="status" type="text" size=25 readonly value="NEW"></td>
+          </tr>
+		  
+
+        </tbody>
+      </table>
+      <input type="hidden" name="_edit_submit" value="1" />
+      <input type="hidden" name="refund_id" value = "11">
+	  <br/>		 	  
+	  <button formmethod="post" formaction="/pt_refund/search_landing.php" value="11" name="_void_submit">Void Refund</button>
+
+
+	  </form>	<br><br>
+	</div> 
+	<center><div class="footer">
+	(refundFunctions.php VERSION) <br />
+	&copy; Community Health Centers of Burlington, Inc. 2014</div></center>
+	</body>
+	</html>

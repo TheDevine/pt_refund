@@ -1,0 +1,64 @@
+
+<HTML>
+	<HEAD>
+		<link rel="stylesheet" type="text/css" href="refundStyle.css">
+		<TITLE>CHCB Patient Refund Manager</TITLE>
+	</head>
+	<body>
+		<table id="head"><tr><td><img src = "logo.png" class="logo" /><td><td><h1 class="title">Patient Refund Manager</h1></td></tr></table><div class="greeting"><h4>Hi, Jonathan Bowley!</h4><h4> Your access level is: Superuser </h4><a href ="logout.php">Logout</a></div><table class = "topMenu"><tr><td><a href="index.php"  class = "button" >Home</td><td><a href="refunds.php" class = "button">Refunds</a></td><td><a href="reports.php"  class = "button">Reports</a></td><td><a href="mngaccount.php"  class = "button">My Account</a></td><td><a href="admin.php" id = "selected">Admin</a></td></tr></table>
+			<h2 align="center">Add a New User</h2>
+			<form method="POST" action="/pt_refund/adduser.php" name="add_user">
+		  <table style="width: 100%" border="1">
+			<tbody>
+			  <tr>
+				<td>First Name</td>
+				<td><input maxlength="50" name="first_name" type="text" value =""><br>
+				</td>
+			  </tr>
+			  <tr>
+				<td>Last Name</td>
+				<td><input maxlength="50" name="last_name" type="text" value =""><br>
+				</td>
+			  </tr>
+			  <tr>
+				<td>User Name</td>
+				<td><input maxlength="50" name="username" type="text" value =""><br />
+			  </tr>
+			  <tr>
+				<td>Department</td>
+				<td>
+				  <select name="department"><option value="1">Admin</option><option value="2">Accounting</option><option value="3">PAR2</option><option value="4">PAR1</option>              </select>
+              <br>
+            </td>
+          </tr>
+          <tr>
+            <td>Access Level</td>
+            <td>
+              <select name="access">
+                <option value="U">User</option>
+                <option value="A">Approver</option>
+                <option value="S">Superuser</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Password</td>
+            <td><input maxlength="10" name="password" type="password"><br>
+            </td>
+          </tr>
+          <tr>
+            <td>Confirm Password</td>
+            <td><input maxlength="10" name="passwordConfirm" type="password"><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <input type="hidden" name="_submit_check" value="1" />
+	  <br>
+      <button formmethod="post" formaction="/pt_refund/adduser.php" value="submit" name="Submit">Add User</button></form><h4 align="center"><a href="admin.php">Return to User Administration Page</a></h4>	<br><br>
+	</div> 
+	<div class="footer"><center>
+	(refundFunctions.php version)
+	<br /> &copy; Community Health Centers of Burlington, Inc. 2014</center></div>
+	</body>
+	</html>
