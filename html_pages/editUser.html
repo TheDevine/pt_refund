@@ -1,0 +1,47 @@
+
+<HTML>
+	<HEAD>
+		<link rel="stylesheet" type="text/css" href="refundStyle.css">
+		<TITLE>CHCB Patient Refund Manager</TITLE>
+	</head>
+	<body>
+		<table id="head"><tr><td><img src = "logo.png" class="logo" /><td><td><h1 class="title">Patient Refund Manager</h1></td></tr></table><div class="greeting"><h4>Hi, Jonathan Bowley!</h4><h4> Your access level is: Superuser </h4><a href ="logout.php">Logout</a></div><table class = "topMenu"><table class = "topMenu"><tr><td>
+				<a href="index.php" id = "selected">Home</td>
+				<td><a href="reports.php"  class = "button">Reports</a></td>
+				<td><a href="search_landing.php"  class = "button">Search</a></td>
+				<td><a href="mngaccount.php"  class = "button">My Account</a></td><td><a href="admin.php" class = "button">Admin</a></td></tr></table>	
+		<h2 align="center">Edit User</h2>
+		<form method="POST" action="/pt_refund/mngaccount.php" name="add_user">
+      <table align="center" style="width: 50%" border="1">
+        <tbody>
+          <tr>
+            <td>First Name</td>
+            <td><input maxlength="50" name="first_name" type="text" value ="Jonathan" readonly><br>
+            </td>
+          </tr>
+          <tr>
+            <td>Last Name</td>
+            <td><input maxlength="50" name="last_name" type="text" value ="Bowley" readonly><br>
+            </td>
+          </tr>
+          <tr>
+            <td>New Password</td>
+            <td><input maxlength="10" name="password" type="password"><br>
+            </td>
+          </tr>
+          <tr>
+            <td>Confirm Password</td>
+            <td><input maxlength="10" name="passwordConfirm" type="password"><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <input type="hidden" name="_edit_submit" value="1" /><input type="hidden" name = "user_id" value="jbowley" />
+      <br/>
+	  <center><button formmethod="post" formaction="/pt_refund/mngaccount.php" value="update" name="Submit">Update User</button></center></form>	<br><br>
+	</div> 
+	<div class="footer"><center>
+	(refundFunctions.php version)
+	<br /> &copy; Community Health Centers of Burlington, Inc. 2014</center></div>
+	</body>
+	</html>
