@@ -298,6 +298,35 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 	showLogin();
 }
 
+function displayRefundUploads($refund_id){
+	
+	echo 'hhh';
+	
+	//standardize filename structure to set proof of concept in place
+	//File 1 = File_
+	$target_dir ="";
+	$target_dir = "uploads/".$refund_id."/";
+
+	echo 'how';
+
+// Open a known directory, and proceed to read its contents
+if (is_dir($target_dir)) {
+	
+	echo 'far';
+    if ($dh = opendir($target_dir)) {
+		
+		
+	echo 'go';
+        while (($file = readdir($dh)) !== false) {
+            echo "Filename: $file : filetype: " . filetype($target_dir . $file) . "\n";
+        }
+        closedir($dh);
+    }
+	
+}
+
+}
+
 
 function uploadFiles($refundID_just_created){
 	
@@ -323,7 +352,7 @@ function uploadFiles($refundID_just_created){
 
 						
 						// Check if file already exists
-						if (file_exists($target_file)) {
+						if (file_exists($target_file) && strlen($target_file)) {
 							echo "Sorry, file already exists. <br>";
 							$uploadOk = 0;
 						}

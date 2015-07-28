@@ -236,13 +236,36 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 		}
 		
 		
+		//_search_submit_changes
 		
-		/*
-		if(isset($_POST['_search_submit']) && $_POST['_search_submit']!="" && $_POST['_search_submit']!=NULL){ 
-			include 'dump_all_page_contents.php'; 
+		if(isset($_POST['_search_submit_changes']) && $_POST['_search_submit_changes']!="" && $_POST['_search_submit_changes']!=NULL){ 
+			//include 'dump_all_page_contents.php'; 
+			
+			if(isset($_POST['refund_search_term_changes']) && $_POST['refund_search_term_changes']=="refund_id" && strlen($_POST['changeMatchingValue'])>0){
+				
+				reportRefundChanges($_POST['changeMatchingValue']);
+			}
+			else
+				reportRefundChanges();
 
 		}
-		*/
+		
+		
+		
+		if(isset($_POST['_search_submit_encounters']) && $_POST['_search_submit_encounters']!="" && $_POST['_search_submit_encounters']!=NULL){ 
+			//include 'dump_all_page_contents.php'; 
+			
+			if(strlen($_POST['datepickerSTART'])>0 && strlen($_POST['datepickerEND'])>0 ){
+				//call with a custom date range
+				reportRefundsMultipleENCOUNTERS($_POST['datepickerSTART'],$_POST['datepickerEND']);
+			}
+			else
+				reportRefundsMultipleENCOUNTERS();
+
+		}
+		
+		
+		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

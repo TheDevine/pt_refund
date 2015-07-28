@@ -765,7 +765,7 @@ EDITUSERPAGE;
 	echo '<br>';
 
 }elseif(isset($_POST['refund_search_termDate']) && strlen($_POST['refund_search_termDate'])>1 && $_POST['refund_search_termDate']!=NULL){
-	
+
 	//navigation menu, top banner nad logout button/////////////////////////////////////////////////////////////////////////////////////
 	showHeaderSearchLanding($username, $accessLvl);
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -796,6 +796,7 @@ EDITUSERPAGE;
 			elseif($_GET['report_id']==6){
 				reportRejected();
 			}
+	
 
 		}
 
@@ -848,6 +849,7 @@ EDITUSERPAGE;
 	$result = mysqli_query($db,$query);
 	$row = mysqli_fetch_array($result);
 	
+	//echo $query;
 
 
 	//END initial config of Pagination//////////////////////////////////////////////////////////////////////////////////////////////

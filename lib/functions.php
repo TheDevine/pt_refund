@@ -387,20 +387,33 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 	$specifier="";
 	if($rowquery_dept_name[0]=='Admin'){
+		//echo $rowquery_dept_name[0];
 		//$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
-		//$specifier= " WHERE 1=1 ";
-		$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' ";
+		$specifier= " WHERE 1=1 ";
+		//$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' ";
 
 	}elseif(strtoupper($rowquery_dept_name[0])=='ACCOUNTING'){
+		//echo $rowquery_dept_name[0];
 		$specifier= " WHERE status= 'ACCOUNTING APPROVAL' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='PAR1'){
+		//echo $rowquery_dept_name[0];
 		$specifier= " WHERE status= 'ACCOUNTING APPROVED' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='PAR2'){
+		//echo $rowquery_dept_name[0];
 		$specifier= " WHERE created_by='{$_SESSION['userid']}' ";
 		//$specifier= " WHERE U.dept_id='1' AND created_by=='{$_SESSION['userid']}' ";
 		//PAR2 can only create, so they are presented with only the refunds PAR2s have created	
-	}		
-	
+	}elseif($rowquery_dept_name[0]=='Billing'){
+		//echo $rowquery_dept_name[0];
+		$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' ";
+	}
+		/*
+	echo $rowquery_dept_name[0];
+	echo '<br>';
+	echo 'specifier is ';
+	echo $specifier;
+	echo '<br>';
+	*/
 	
 	if($accessLvl == 'U'){//is access is only at the user level, then must match the refunds pulled to display only the current users created refunds
 
@@ -447,10 +460,11 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 	}
 	
-	
-	//echo $query;
-	//echo '<br>';
-	
+	/*
+	echo 'the query is <br>';
+	echo $query;
+	echo '<br>';
+	*/
 	$result = mysqli_query($db,$query); 
 	$row = @mysqli_fetch_array($result);
 	$sizeOfResultSet=sizeof($row);	
@@ -475,12 +489,13 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	echo $query ;
 	echo '<br>';
 	*/
-	
+
 	
 	if($sizeOfResultSet){
 		
 		if(strtoupper($rowquery_dept_name[0])=="PAR2"){
 			 print '<p align="center"> Billing Refund Requests which you\'ve Requested:</p>';
+		
 		}else{
 			print '<p align="center"> All '.$rowquery_dept_name[0].' Refund Requests:</p>';
 		}
@@ -520,19 +535,42 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 		if($result_display_ctr<$_SESSION['RowsPerPage']){
 	
 			$result_display_ctr++;
-
+			
 				if($row['urgent']){
-					print '<tr bgcolor=#EE0000 height=50>';
+					print '<tr class="urgent" >';
 				}
 				elseif($interval->days>30 && $row['status']!="COMPLETED"){
-					print '<tr bgcolor=#FF69B4>';
+					print '<tr class="30Days">';
 				}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
-					print '<tr bgcolor=yellow>';
+					print '<tr class="15Days">';
 				}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
-					print '<tr bgcolor=#00BB00>';
+					print '<tr class="new">';
 				}else{
 					print '<tr>';
 				}
+				
+				/*
+				
+					urgent = #EE0000;
+					30Days=#FF69B4;
+					15Days=yellow;
+					new=00BB00;
+					completed=white;
+					
+					if($row['urgent']){
+					print '<tr bgcolor=#EE0000 height=50>';
+					}
+					elseif($interval->days>30 && $row['status']!="COMPLETED"){
+					print '<tr bgcolor=#FF69B4>';
+					}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+					print '<tr bgcolor=yellow>';
+					}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+					print '<tr bgcolor=#00BB00>';
+					}else{
+					print '<tr>';
+					}
+				
+				*/
 				
 				
 				print '<td><a href="search_landing.php?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>';
@@ -566,7 +604,10 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 		displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
 
 	//}
-
+		echo '<center>';
+			 echo 'TOTAL Results: '.$numResultENTIRERows.' Records ';
+			 echo '<h2>'.ceil($numResultENTIRERows/$_SESSION['RowsPerPage']).' Pages </h2>';
+		echo '</center>';
 	
 }else{
 	//print message saying they have no refunds to are
@@ -582,7 +623,6 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	showFooter();
 	
 }
-
 
 
 //refund functions below

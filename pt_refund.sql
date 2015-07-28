@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 27, 2015 at 08:34 PM
+-- Generation Time: Jul 28, 2015 at 11:46 PM
 -- Server version: 5.6.17
 -- PHP Version: 5.5.12
 
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `departments` (
   `dept_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`dept_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=6 ;
 
 --
 -- Dumping data for table `departments`
@@ -57,7 +57,8 @@ INSERT INTO `departments` (`dept_id`, `name`) VALUES
 (1, 'Admin'),
 (2, 'Accounting'),
 (3, 'PAR2'),
-(4, 'PAR1');
+(4, 'PAR1'),
+(5, 'Billing');
 
 -- --------------------------------------------------------
 
@@ -193,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `refund` (
   PRIMARY KEY (`refund_id`),
   KEY `created_by` (`created_by`),
   KEY `approved_by` (`approved_by`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=86 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=87 ;
 
 --
 -- Dumping data for table `refund`
@@ -259,7 +260,8 @@ INSERT INTO `refund` (`NG_enc_id`, `refund_id`, `created_by`, `approved_by`, `dt
 ('456446', 82, 14, NULL, '2015-07-27 17:22:27', NULL, '3423.00', '', '0000-00-00 00:00:00', 'sdf', 'dsf', '', 'Burlington', 'VA', '12312', 'sdf', NULL, 'PAR2 Initial', NULL, NULL, 'dsf', 74, '2015-07-27 20:30:12', NULL, 0, 0, 0, 0, 0, 0, 14, '', NULL),
 ('65433', 83, 74, NULL, '2015-07-27 17:50:32', NULL, '499.00', '123456', '2015-07-01 00:00:00', 'under five hundred', '123', '', 'Burlington', 'VA', '12321', 'dsf', NULL, 'COMPLETED', NULL, NULL, 'dsf', 75, '2015-07-27 18:12:36', NULL, 0, 0, 0, 0, 0, 0, 74, '', NULL),
 ('335577', 84, 14, NULL, '2015-07-27 19:45:32', NULL, '88888.00', '', '0000-00-00 00:00:00', 'dsf', 'sdf', '', 'Burlington', 'VT', '12321', 'dsf', NULL, 'PAR2 Initial', NULL, NULL, 'dsf', 74, '2015-07-27 20:28:16', NULL, 0, 0, 0, 0, 0, 0, 14, '', NULL),
-('84756', 85, 14, NULL, '2015-07-27 20:20:21', NULL, '55555.00', '', '0000-00-00 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12321', 'sdsf', NULL, 'PAR2 Initial', NULL, NULL, 'dsf', 74, '2015-07-27 20:24:33', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial');
+('84756', 85, 14, NULL, '2015-07-27 20:20:21', NULL, '55555.00', '', '0000-00-00 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12321', 'sdsf', NULL, 'PAR2 Initial', NULL, NULL, 'dsf', 74, '2015-07-27 20:24:33', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('7531', 86, 14, NULL, '2015-07-27 21:33:19', NULL, '9876.00', '123456', '2015-07-01 00:00:00', 'me', 'sdf', '', 'Burlington', 'VT', '05401', 'sdf', NULL, 'COMPLETED', NULL, NULL, 'dsf', 75, '2015-07-27 21:42:14', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial');
 
 -- --------------------------------------------------------
 
@@ -362,7 +364,8 @@ CREATE TABLE IF NOT EXISTS `refund_changes` (
 --
 
 INSERT INTO `refund_changes` (`refund_id`, `status_before`, `status_after`, `date`, `name`, `comments`) VALUES
-(77, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'Does this work?');
+(77, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'Does this work?'),
+(86, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'the initial approval');
 
 -- --------------------------------------------------------
 
@@ -402,7 +405,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `delete_ind` int(11) DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   KEY `dept_id` (`dept_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=76 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=77 ;
 
 --
 -- Dumping data for table `users`
@@ -420,10 +423,11 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `access_lvl`, `dept_i
 (18, 'Deanna', 'Hurne', 'A', 2, '$1$DZ2.QX5.$Sy5v14vTasM8069cA4Bgb/', 'dhurne', NULL),
 (53, 'Laura', 'Wheatley', 'A', 3, NULL, 'lwheatley', NULL),
 (54, 'Kimberly', 'Fuller', 'A', 3, NULL, 'kfuller', NULL),
-(72, 'Accounting', 'Tester', 'S', 2, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'tester', NULL),
-(73, 'Final ', 'Approval', 'S', 3, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'PAR2_Final', NULL),
-(74, 'Initial', 'Approval', 'S', 3, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'PAR2_Initial', NULL),
-(75, 'Par1', 'Tester', 'S', 4, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'PAR1', NULL);
+(72, 'Accounting', 'Tester', 'S', 2, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'accounting', NULL),
+(73, 'Final ', 'Approval', 'S', 5, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'Billing_Final', NULL),
+(74, 'Initial', 'Approval', 'S', 5, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'Billing_Initial', NULL),
+(75, 'Par1', 'Tester', 'S', 4, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'PAR1', NULL),
+(76, 'admin', 'test', 'S', 1, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'testadmin', NULL);
 
 --
 -- Constraints for dumped tables

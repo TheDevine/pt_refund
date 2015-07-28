@@ -282,6 +282,30 @@ EDITUSERPAGE;
 function displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD){
 
 	
+
+	
+			// echo ceil($numResultENTIRERows/$_SESSION['RowsPerPage']).' Pages';
+	
+	//$page_number=$numResultENTIRERows/$_SESSION['RowsPerPage'];
+	
+	//include 'dump_all_page_contents.php';
+	
+	$page_number=$_REQUEST['page_number'];
+	
+	//echo 'page #';
+	//echo $page_number;
+	
+	$page_num_front=$page_number;
+
+	$page_num_back=$page_number--; //0
+	
+
+	$page_num_front++; //1
+	
+	$page_num_back++;
+	$page_num_front++;
+	
+	
 	$newOffSet=0;
 	
 	if ($_GET['page_number']>=1){
@@ -304,9 +328,9 @@ function displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL
 EDITUSERPAGE;
 		echo '<br><br><br>';
 			if($tempOrigStartPosition>0){
-				
+	
 			print <<<EDITUSERPAGE
-				<center><b><i><a href="{$URL_String_BACK}"> << PREVIOUS PAGE </a>
+				<center><b><i><a href="{$URL_String_BACK}"> $page_num_back &nbsp; &nbsp;  << PREVIOUS PAGE </a>
 EDITUSERPAGE;
 
 			}
@@ -322,7 +346,7 @@ EDITUSERPAGE;
 
 
 			print <<<EDITUSERPAGE
-				<b><i><a href="{$URL_String_FORWARD}">NEXT PAGE >> </a></center>
+				<b><i><a href="{$URL_String_FORWARD}">NEXT PAGE >> &nbsp;&nbsp;  $page_num_front</a></center>
 EDITUSERPAGE;
 			}
 	
@@ -338,10 +362,12 @@ EDITUSERPAGE;
 function displayPaginationReports($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD){
 
 
+			/*
 			echo 'forward in pagination reports ';
 			echo $URL_String_FORWARD;
 			echo '<br>';
 			echo 'end forward';
+			*/
 
 			$newOffSet=0;
 			

@@ -92,7 +92,26 @@ if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 	}
 	elseif($_GET['report_id']==7){
 		reportVoided();
+	}elseif($_GET['report_id']==8){
+	
+		reportChanges();
+	
 	}
+	elseif($_GET['report_id']==9){
+	
+		//ECHO 'IN REPORT ID ';
+		//ECHO '9';
+		//die();
+		reportMultipleEncounters();
+	
+	}elseif($_GET['report_id']==10){
+	
+		reportInitialApprovalBilling();
+	
+	}
+	
+	
+
 	
 }
 
@@ -729,6 +748,49 @@ function sendOutEmail($from, $to, $subject,$body,$host,$port){
 		
 }
 
+function displayRefundUploads($refund_id){
+	
+
+	//standardize filename structure to set proof of concept in place
+	//File 1 = File_
+	$target_dir ="";
+	$target_dir = "uploads/".$refund_id."/";
+	$full_path="";
+	$doc_ctr=1;
+	
+	if (is_dir($target_dir)) {
+
+	echo "<h3>Uploaded Documents</h3>";
+
+
+// Open a known directory, and proceed to read its contents
+		if (is_dir($target_dir)) {
+
+
+		if ($dh = opendir($target_dir)) {
+			
+	
+			while (($file = readdir($dh)) !== false) {
+				if(strlen($file)>2){ //dont show hidden default files
+					$full_path=$target_dir.$file;
+					echo '<i><b>Document '.$doc_ctr.':  </b></i>';
+					echo "<i><b><a href='{$full_path}'>$file</a></b></i><br><br>";
+					//echo "Filename: $file : filetype: " . filetype($target_dir . $file) . "\n";
+					$doc_ctr++;
+				}
+
+			}
+			echo '<br>';
+			closedir($dh);
+		}
+
+		}
+		
+	}else{
+			echo "<h3>No Documents Attached</h3>";
+	}
+
+}
 
 
 function showEditPage($username='', $accessLvl = '', $errors = ''){ //page where user will actually edit user information
@@ -830,6 +892,22 @@ EDITUSERPAGE;
 			FROM refund AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_POST['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}
 	}
+	
+	
+			if(isset($_GET['refund_id'])){
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request, status, dt_required, payable, 
+			addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments, assigned_to,created_by,check_date,check_nbr,refund_id 
+			FROM refund AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_GET['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		}else{
+			
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request, status, dt_required, payable, 
+			addr_ln_1, addr_ln_2, city, state, zip, purpose, amount, status, comments, assigned_to,created_by,check_date,check_nbr,refund_id 
+			FROM refund AS R INNER JOIN users AS U ON R.created_by= U.user_id WHERE refund_id = '{$_POST['refund_id']}' LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		}
+	
+	//echo $dept_rowName['name'];
+	//echo '<br>';
+
 
 	
 	$result = mysqli_query($db,$query); 
@@ -885,13 +963,14 @@ EDITUSERPAGE;
 	}
 
 	
+	
 	if($row['created_by']==$_SESSION['userid']){ 
 	
 
 	print <<<EDITUSERPAGE
-<h2 align="center">Edit Refund</h2>
+<h2 align="center">Edit REFUND</h2>
 <a href="{$_SERVER['HTTP_REFERER'] }">Back</a>
-<br/><br/>
+<br/><br/><br>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
         <tbody>
@@ -979,7 +1058,14 @@ EDITUSERPAGE;
             <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
           </tr>
 		  
+EDITUSERPAGE;
+	
+		//$row['refund_id']
 
+
+		displayRefundUploads($row['refund_id']);
+
+print <<<EDITUSERPAGE
         </tbody>
       </table>
       <input type="hidden" name="_edit_submit" value="1" />
@@ -1022,10 +1108,10 @@ EDITUSERPAGE;
 		$_SESSION['return_URI']=$_SERVER['REQUEST_URI'];
 		
 
-		
+	//	gfd
 	print <<<EDITUSERPAGE
 <h2 align="center">EDIT Refund</h2>
-<a href="reports.php">Back to Refunds</a>
+<a href="index.php">Back to Refunds</a>
 <br/><br/>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
@@ -1095,7 +1181,9 @@ EDITUSERPAGE;
       <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
 	  <br/>
 EDITUSERPAGE;
-		
+
+	displayRefundUploads($row['refund_id']);
+
 	  if ($_SESSION['userid']==$row['created_by']){ //only allow them to modify the refund if they created it
 	  
 	print <<<EDITUSERPAGE
@@ -3390,16 +3478,21 @@ function showReportsPage($username='', $accessLvl = '', $errors = ''){
 	print '<h2 align="center">Generate Reports</h2>';
 	print '<center><a href='."refunds.php".'?report_id=0>All Refunds</a></center>';
 	print '<br>';
-	print '<center><a href='."refunds.php".'?report_id=2>NEW</a></center>';
-	print '<center><a href='."refunds.php".'?report_id=1>COMPLETED</a></center>';
-	print '<center><a href='."refunds.php".'?report_id=4>PAR 2 APPROVED</a></center>';
+
+	print '<center><a href='."refunds.php".'?report_id=10>BILLING INITIAL APPROVAL</a></center>'; //previously was PAR 2 APPROVED
+	print '<center><a href='."refunds.php".'?report_id=4>ACCOUNTING APPROVAL</a></center>'; //previously was PAR 2 APPROVED
 	print '<center><a href='."refunds.php".'?report_id=3>ACCOUNTING APPROVED</a></center>';
 	/* print '<center><a href='."refunds.php".'?report_id=5>PAR 1 APPROVED</a></center>'; */
+	echo '<br>';
+	print '<center><a href='."refunds.php".'?report_id=2>NEW</a></center>';
+	print '<center><a href='."refunds.php".'?report_id=1>COMPLETED</a></center>';
 	print '<center><a href='."refunds.php".'?report_id=6>REJECTED</a></center>';
 	print '<center><a href='."refunds.php".'?report_id=7>VOIDED</a></center>';
+	
+	echo '<br>';
+	print '<center><a href='."refunds.php".'?report_id=8>STATUS CHANGES </a></center>';
 
-
-
+	print '<center><a href='."refunds.php".'?report_id=9>MULTIPLE ENCOUNTERS </a></center>';
 		  
 	//reportAccountingApproved();
 	showFooter();
@@ -3940,7 +4033,7 @@ function reportAccountingApproved(){
 	
 	///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	print '<br><br>';
-	print '<center>Displaying: <b> ACCOUNTING APPROVED Reports</b></center>';
+	print '<center>Displaying: <b> ACCOUNTING APPROVED </b></center>';
 	print '<br /><br /><div align = "center">';
 	print '<table border="1" cellpadding = "3">
 	<tr>
@@ -4002,23 +4095,8 @@ function reportAccountingApproved(){
 		<td>'.$row['payable'].'</td>';
 		print '<td>$ '.$row['amount'].'</td>';
 		
-		if(!$row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-			print '<td>NEW</td>';
-		}elseif(!$row['accounting_approval'] && $row['billing_initial_approval']){
-			print '<td>ACCOUNTING APPROVAL</td>';
-		}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && !$row['billing_final_approval']){
-			print '<td>ACCOUNTING APPROVED</td>';
-		}elseif($row['accounting_approval'] && $row['billing_initial_approval'] && $row['billing_final_approval']){
-			print '<td>COMPLETED</td>';
-		}elseif($row['status']=="REJECTED"){
-			print '<td>REJECTED</td>';
-		}elseif($row['status']=="VOIDED"){
-			print '<td>VOIDED</td>';
-		}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
-			print '<td>ACCOUNTING APPROVED</td>';
-		}
-
-
+		print '<td>ACCOUNTING APPROVED</td>';
+	
 		print '<td>'.$refund_assigned_to.'</td>';
 
 		print	'</td></tr>';
@@ -4084,8 +4162,8 @@ function reportAll(){
 
 	$result = mysqli_query($db,$query); 
 	
-	echo 'the query: <br>';
-	echo $query;
+	//echo 'the query: <br>';
+	//echo $query;
 	
 	
 	//FULL RESULT SET
@@ -4784,7 +4862,7 @@ function reportBillingInitial(){
 			INNER JOIN 
 			users AS U 
 			ON R.created_by = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED' AND status ='ACCOUNTING APPROVAL'
+			WHERE status ='ACCOUNTING APPROVAL'
 			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 			
 		}else{
@@ -4794,7 +4872,7 @@ function reportBillingInitial(){
 			INNER JOIN 
 			users AS U 
 			ON R.created_by = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED' AND status ='ACCOUNTING APPROVAL'  
+			WHERE status ='ACCOUNTING APPROVAL'  
 			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		}
 
@@ -4809,7 +4887,7 @@ function reportBillingInitial(){
 			INNER JOIN 
 			users AS U 
 			ON R.created_by = U.user_id 
-			WHERE status !='deleted' AND status !='VOIDED' AND status ='ACCOUNTING APPROVAL' 
+			WHERE status ='ACCOUNTING APPROVAL' 
 			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 		
 		}else{
@@ -4820,7 +4898,7 @@ function reportBillingInitial(){
 			INNER JOIN 
 			users AS U 
 			ON R.created_by = U.user_id 
-			WHERE status !='deleted' AND status ='ACCOUNTING APPROVAL'  
+			WHERE status ='ACCOUNTING APPROVAL'  
 			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
 
 		}
@@ -4843,7 +4921,7 @@ function reportBillingInitial(){
 	
 	///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	print '<br><br>';
-	print '<center>Displaying: <b>PAR2 Initial Approval</b></center>';
+	print '<center>Displaying: <b>ACCOUNTING Approval</b></center>';
 	print '<br /><br /><div align = "center">';
 	print '<table border="1" cellpadding = "3">
 	<tr>
@@ -4913,6 +4991,161 @@ function reportBillingInitial(){
 		}elseif($row['accounting_approval'] && !$row['billing_initial_approval'] && !$row['billing_final_approval']){
 			print '<td>ACCOUNTING APPROVED</td>';
 		}
+
+
+		print '<td>'.$refund_assigned_to.'</td>';
+
+		print	'</td></tr>';
+
+	}	
+
+	print '</table></div>';
+	
+	print <<<EDITUSERPAGE
+		<br><center><a href="reports.php"><button value="Back" name="Back">Back To Reports Page</button></a></center>
+EDITUSERPAGE;
+	
+	//print '<h3 align="center"><a href="addrefund.php">Create a New Refund Request</a></h3>';
+	
+	showFooter();
+	
+	
+}
+
+
+function reportInitialApprovalBilling(){
+	
+	//include 'dump_all_page_contents.php'; 
+	showHeaderALL($_SESSION['username'], $_SESSION['access']);
+	include 'connectToDB.php'; 
+	include 'pagination_functionality.php';
+
+
+	if($accessLvl == 'U'){//is access is only at the user level, then must match the refunds pulled to display only the current users created refunds
+
+		if(!isset($_SESSION['order'])){
+			
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status ='PAR2 Initial'
+			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+			
+		}else{
+
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status ='PAR2 Initial'  
+			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		}
+
+	
+	}else{
+
+		if(!isset($_SESSION['order'])){
+		
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to,
+			accounting_approval,billing_initial_approval,billing_final_approval 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status ='PAR2 Initial' 
+			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		
+		}else{
+
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to,
+			accounting_approval,billing_initial_approval,billing_final_approval 			
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status ='PAR2 Initial'  
+			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+
+		}
+		
+
+	}
+	
+	$result = mysqli_query($db,$query); 
+	$arrayRefundUsers=array();
+	
+	$queryUserIDs="SELECT user_id, first_name, last_name FROM users";
+	$resultUserIDs = mysqli_query($db,$queryUserIDs); 
+
+		
+	$ctr=0;
+	while ($row = mysqli_fetch_array($resultUserIDs)){
+
+		$arrayRefundUsers[$row['user_id']]=$row['first_name'].' '.$row['last_name'];
+	}
+	
+	///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	print '<br><br>';
+	print '<center>Displaying: <b>Billing Initial Approval</b></center>';
+	print '<br /><br /><div align = "center">';
+	print '<table border="1" cellpadding = "3">
+	<tr>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_num=y>Encounter Number</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?refund_id=y>Refund IDs</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y>Date Requested</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y>Urgent</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?requested_by=y>Requested By</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?payable_order=y>Payable To</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?amount_order=y>Amount</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Status</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Assigned To</a></b></center></td>'
+	;	
+	///////END HEADINGS FROM THE REFUNDS PAGE////////////////////?////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+
+	$current_date=date("Y-m-d H:i:s");  
+
+	while ($row = mysqli_fetch_array($result)){
+
+		$today_dt=$entered_dt=$interval=$refund_requested_by=$date_requested=$refund_assigned_to=$interval="";
+		calculateInterval($row,$refund_requested_by,$date_requested,$today_dt,$entered_dt,$interval,$refund_assigned_to);
+		//$refund_assigned_to=$row['assigned_to'];
+		
+		$refund_assigned_to="";
+		$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
+		$resultUserIDs = mysqli_query($db,$queryUserIDs); 
+		
+	
+
+		while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
+			$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
+		}
+		
+		
+		if($interval->days>30 && $row['status']!="COMPLETED"){
+			print '<tr bgcolor=#FF0000>';
+		}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+			print '<tr bgcolor=yellow>';
+		}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+			print '<tr bgcolor=#009900>';
+		}else{
+			print '<tr>';
+		}
+
+		//print '<tr>
+		print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>
+		<td>'.$row['refund_id'].'</td>
+		<td>'.$row['dt_request'].'</td>
+		<td>'. ($row['urgent'] ? 'Yes' : 'No') .'</td>
+		<td>'.$row['first_name'].' '.$row['last_name'].'</td>
+		<td>'.$row['payable'].'</td>';
+		print '<td>$ '.$row['amount'].'</td>';
+
+		print '<td>BILLING INITIAL APPROVAL</td>';
+
 
 
 		print '<td>'.$refund_assigned_to.'</td>';
@@ -5264,6 +5497,341 @@ EDITUSERPAGE;
 }
 
 
+function reportRefundChanges($refund_id=''){
+	
+	
+			/*
+			The SESSION Contents are:
+
+			array (size=7)
+			'loginName' => string 'Billing_Final' (length=13)
+			'userid' => string '73' (length=2)
+			'username' => string 'Final  Approval' (length=15)
+			'access' => string 'S' (length=1)
+			'RowsPerPage' => int 10
+			'initialOffset' => int 0
+			'return_URI' => string '/pt_refund/search_landing.php?refund_id=43&action=edit' (length=54)
+
+			The POST Contents are:
+
+			array (size=7)
+			'datepickerSTART' => string '' (length=0)
+			'datepickerEND' => string '' (length=0)
+			'refund_search_term_changes' => string 'refund_id' (length=9)
+			'changeMatchingValue' => string '' (length=0)
+			'_search_submit_changes' => string '1' (length=1)
+			'refund_id' => string '' (length=0)
+			'generateReport' => string 'generateReport' (length=14)
+
+			*/
+	
+	
+	//echo 'the refund id is ';
+	//echo $refund_id;
+	
+	if(isset($_SESSION['initialOffset']))//reset initial offset
+		$_SESSION['initialOffset']=0;
+	
+	$selector=" WHERE 1=1 ";
+	
+	if(strlen($refund_id)){
+		//they called the function with a refund id , o/w select all refunds
+		
+		$selector=" WHERE refund_id=".$refund_id;
+	}
+	
+
+
+	showHeaderALL($_SESSION['username'], $_SESSION['access']);
+	include 'connectToDB.php'; 
+	include 'pagination_functionality.php';
+
+	print '<br><br>';
+	print '<center><H2><b>REPORT Parameters </b></H2></center>';
+
+	print '<br>';
+	print '<center>DISPLAYING:  <b> STATUS CHANGE Report</b></center>';
+		print '<br>';
+
+	
+	if(strlen($_POST['datepickerSTART']) || strlen($_POST['datepickerEND']) || strlen($_POST['refund_search_term_changes']) ){
+			
+				if(strlen($_POST['datepickerSTART']) && strlen($_POST['datepickerEND']) ){
+					print '<center>START DATE:  <B>'.$_POST['datepickerSTART'].'</B></center>';
+					print '<center>END DATE:  <B>'.$_POST['datepickerEND'].'</B></center>';
+
+				}
+				ECHO '<BR>';
+				if(strlen($_POST['refund_search_term_changes']) && strlen($_POST['changeMatchingValue'])){
+					print '<center>SEARCH TERM:  <B>'.$_POST['refund_search_term_changes'].': '.$_POST['changeMatchingValue'].'</B></center>';
+				
+				}
+
+	}ELSE{
+		print '<center><B>REFUND SEARCH PERIOD: PAST MONTH</B></center>';
+		print '<center>SEARCH TERM:  <B>ALL STATUS CHANGES</B></center>';
+
+	}
+	
+
+	print '<br /><br /><div align = "center">';
+	print '<table border="1" cellpadding = "3">
+	<tr>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?refund_id=y>Refund IDs</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?date=y>Date Changed</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_before=y>Previous Status</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_after=y>Status Changed To</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?name=y>Changed By</a></b></center></td>
+	<td><center><b><a href='.$_SERVER['PHP_SELF'].'?comments=y>Comments</a></b></center></td></tr>';
+	
+	
+		$queryStatusChange = "SELECT * FROM refund_changes ".$selector."
+		ORDER BY date DESC LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		
+		//echo $queryStatusChange;
+		//echo '<br>';
+		$resultUserIDs = mysqli_query($db,$queryStatusChange);
+		
+
+		while ($row = mysqli_fetch_array($resultUserIDs)){
+
+
+			
+			$today_dt=$entered_dt=$interval=$refund_requested_by=$date_requested=$refund_assigned_to=$interval="";
+			
+			calculateInterval($row,$refund_requested_by,$date_requested,$today_dt,$entered_dt,$interval,$refund_assigned_to);
+			
+			
+			
+			if($interval->days>30 && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#FF0000>';
+			}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=yellow>';
+			}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#009900>';
+			}else{
+				print '<tr>';
+			}
+			
+			
+			print '<tr>';
+			
+		print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
+		<td>'.$row['date'].'</td>
+		<td>'. $row['status_before'] .'</td>
+		<td>'.$row['status_after'].'</td>
+		<td>'.$row['name'].'</td>
+		<td>'.$row['comments'].'</td>';
+
+
+
+	}	
+	print '</tr>';
+	print '</table></div>';
+	
+	print <<<EDITUSERPAGE
+		<br><center><a href="reports.php"><button value="Back" name="Back">Back To Reports Page</button></a></center>
+EDITUSERPAGE;
+	
+
+	showFooter();
+	
+	
+}
+
+function reportRefundsMultipleENCOUNTERS($start_date='',$end_date=''){
+	
+/*	
+GENERATE REPORT OF REFUNDS WITH MULTIPLE ENCOUNTERS
+
+ALL REFUNDS WITH MULTIPLE ENCOUNTERS
+
+SEARCH FOR A REFUND ID AND GENERATE A LIST OF ALL THE ENCOUNTERS ASSOCIATED WITH THE ID
+
+SEARCH FOR AN ENCOUNTER ID AND GENERATE A LIST OF ALL REFUNDS ASSOCIATED WITH THAT ENCOUNTER
+*/
+	include 'connectToDB.php'; 
+	include 'pagination_functionality.php';
+	
+	showHeaderALL($_SESSION['username'], $_SESSION['access']);
+
+
+	print '<br><br>';
+	print '<center><H2><b>REPORT Parameters </b></H2></center>';
+
+	print '<br>';
+	print '<center>DISPLAYING:  <b> Refunds with Multiple Encounters</b></center>';
+		print '<br>';
+
+	
+	if(strlen($_POST['datepickerSTART']) || strlen($_POST['datepickerEND']) || strlen($_POST['refund_search_term_changes']) ){
+			
+				if(strlen($_POST['datepickerSTART']) && strlen($_POST['datepickerEND']) ){
+					print '<center>START DATE:  <B>'.$_POST['datepickerSTART'].'</B></center>';
+					print '<center>END DATE:  <B>'.$_POST['datepickerEND'].'</B></center>';
+
+				}
+				ECHO '<BR>';
+				if(strlen($_POST['refund_search_term_changes']) && strlen($_POST['changeMatchingValue'])){
+					print '<center>SEARCH TERM:  <B>'.$_POST['refund_search_term_changes'].': '.$_POST['changeMatchingValue'].'</B></center>';
+				
+				}
+
+	}ELSE{
+		print '<center><B>REFUND SEARCH PERIOD: PAST MONTH</B></center>';
+		print '<center>SEARCH TERM:  <B>ALL STATUS CHANGES</B></center>';
+
+	}
+	
+
+
+
+	if(strlen($start_date)>0 && strlen($end_date)>0){
+
+			$pieces_from = explode("/", $start_date);
+			$converted_date_from=date("Y-m-d", mktime(0, 0, 0, $pieces_from[0], $pieces_from[1], $pieces_from[2]));
+			//$entered_dt_from = new DateTime($converted_date_from);
+
+
+			$pieces_to = explode("/", $end_date);
+			$converted_date_to=date("Y-m-d", mktime(0, 0, 0, $pieces_to[0], $pieces_to[1], $pieces_to[2]));
+			//$entered_dt_to = new DateTime($converted_date_to);
+
+			/*
+			if (isset($_SESSION['order']) && strlen($_SESSION['order'])>0){
+				
+				
+				$query="SELECT * FROM refund AS R 
+				INNER JOIN 
+				users AS U 
+				ON R.created_by = U.user_id 
+				INNER JOIN 
+				refund_manyencounters AS rm
+				ON R.refund_id=rm.Refund_ID
+				WHERE dt_request between '".Date($converted_date_from)."' 
+				AND '".Date($converted_date_to)."' 
+				ORDER BY {$_SESSION['order']}
+				LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+
+		
+
+			}else{
+
+				$query="SELECT * FROM refund AS R 
+				INNER JOIN 
+				users AS U 
+				ON R.created_by = U.user_id 
+				INNER JOIN 
+				refund_manyencounters AS rm
+				ON R.refund_id=rm.Refund_ID 
+				WHERE dt_request between '".Date($converted_date_from)."' 
+				AND '".Date($converted_date_to)."'  
+				ORDER BY refund_id, dt_request,U.last_name,status
+				LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];		
+					
+			}
+			
+			$query="SELECT * FROM refund AS R 
+				INNER JOIN 
+				refund_manyencounters AS rm
+				ON R.refund_id=rm.Refund_ID
+				WHERE dt_request between '".Date($converted_date_from)."' 
+				AND '".Date($converted_date_to)."' 
+				LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+				
+				*/
+				
+				
+				
+					$query="SELECT * FROM refund AS R 
+				INNER JOIN 
+				users AS U 
+				ON R.created_by = U.user_id 
+				INNER JOIN 
+				refund_manyencounters AS rm
+				ON R.refund_id=rm.Refund_ID
+				WHERE dt_request between '".Date($converted_date_from)."' 
+				AND '".Date($converted_date_to)."' 
+				LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+				
+	}else{
+		
+		$now = date("Y-m-d H:i:s");
+		
+		$date_one_month_ago= date("Y-m-d", strtotime( date( "Y-m-d", strtotime( date("Y-m-d") ) ) . "-1 month" ) );
+		
+		
+			$query="SELECT * FROM refund AS R 
+				INNER JOIN 
+				users AS U 
+				ON R.created_by = U.user_id 
+				INNER JOIN 
+				refund_manyencounters AS rm
+				ON R.refund_id=rm.Refund_ID
+				WHERE dt_request between '$date_one_month_ago'  
+				AND '$now' 
+				LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+
+		
+	}		
+				
+	
+		$result = mysqli_query($db,$query);
+
+		
+		//refund id , encounter id, date requested, status
+	
+		print '<br /><br /><div align = "center">';
+		print '<table border="1" cellpadding = "3">
+		<tr>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?refund_id=y>Refund ID</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?enc_nbr=y>Encounter Number</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?dt_request=y>Date Requested</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status=y>Status</a></b></center></td>';
+
+	
+
+
+		while ($row = mysqli_fetch_array($result)){
+			
+			$today_dt=$entered_dt=$interval=$refund_requested_by=$date_requested=$refund_assigned_to=$interval="";
+			
+			calculateInterval($row,$refund_requested_by,$date_requested,$today_dt,$entered_dt,$interval,$refund_assigned_to);
+			
+			
+			if($interval->days>30 && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#FF0000>';
+			}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=yellow>';
+			}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+				print '<tr bgcolor=#009900>';
+			}else{
+				print '<tr>';
+			}
+			
+			
+			print '<tr>';
+			
+		print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
+		<td>'.$row['Encounter_ID'].'</td>
+		<td>'.$row['dt_request'].'</td>
+		<td>'. $row['status'] .'</td>';
+
+	}	
+	print '</tr>';
+	print '</table></div>';
+	
+	print <<<EDITUSERPAGE
+		<br><center><a href="reports.php"><button value="Back" name="Back">Back To Reports Page</button></a></center>
+EDITUSERPAGE;
+	
+					
+	
+}
+
+
+
+	
 function reportRejected(){
 	
 	//include 'dump_all_page_contents.php'; 
@@ -5453,6 +6021,229 @@ function sendEmailBillingInitialApproved(){
 
 }
 
+
+
+function reportMultipleEncounters(){
+	
+	showHeaderSearchLanding($username, $accessLvl);
+
+
+	$typeOFRefundSearch=array('refund_id','status_before','status_after','date','comments');
+
+	//refund_id, status_before,status_after,date,comments
+
+print <<<EDITUSERPAGE
+<center><h2 align="center">Refunds With Multiple Encounters:</h2>
+
+<center>Please select the date range and the value you would like to search for. 
+<br> If left blank, by default it will return all refunds with multiple encounters during the past month.
+<br> Then click 'Continue', to perform the search : </center>	
+
+
+
+	<form method="POST" action="{$_SERVER['PHP_SELF']}" name="search_refunds_encounters">
+  <table style="width: 100%" border="0">
+	<tbody>
+	
+	
+		<tr><td>
+					<center><p>FROM Date: 
+					<input type="text" name="datepickerSTART" id="datepickerSTART">
+					&nbsp;
+					TO Date: 
+					<input type="text" name="datepickerEND" id="datepickerEND"></p></center>
+		</td></tr>
+				<br><br>
+				<tr><td>&nbsp;</td></tr>
+			
+	
+EDITUSERPAGE;
+
+/*
+GENERATE REPORT OF REFUNDS WITH MULTIPLE ENCOUNTERS
+
+ALL REFUNDS WITH MULTIPLE ENCOUNTERS
+
+SEARCH FOR A REFUND ID AND GENERATE A LIST OF ALL THE ENCOUNTERS ASSOCIATED WITH THE ID
+
+SEARCH FOR AN ENCOUNTER ID AND GENERATE A LIST OF ALL REFUNDS ASSOCIATED WITH THAT ENCOUNTER
+*/
+
+
+//ALL REFUNDS WITH MULTIPLE ENCOUNTERS
+
+/*
+
+  <tr><td><center> SEARCH By: &nbsp;&nbsp;&nbsp;&nbsp;
+		  <select name="refund_search_term_encounters">
+
+
+foreach($typeOFRefundSearch as $key => $value){
+	print "<option value=\"{$value}\">{$value}</option>";	
+	//print $selected; ">{$value}</option>";	
+}
+
+
+print <<<EDITUSERPAGE
+		  </select>
+		&nbsp;
+	  Matching Value: <input type="text" name="changeMatchingValue" value="" /> </center></td></tr>
+
+EDITUSERPAGE;
+
+*/
+
+
+	 ?>
+	 
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+
+
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		</script>	 
+	 
+	 <?php
+	// echo 'self';
+	// echo $_SERVER['PHP_SELF'];
+	
+//	include 'dump_all_page_contents.php';
+	 
+print <<<EDITUSERPAGE
+
+	  
+	</tbody>
+  </table>
+  <input type="hidden" name="_search_submit_encounters" value="1" />
+  <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
+
+
+  <br/><br>
+  
+	<hr>
+ <br/>
+  
+  
+  	<tr><td colspan="2"><center><button name="generateReport" value="generateReport" type="submit">GENERATE REPORT</button></center></td></tr>
+
+
+  </form>
+EDITUSERPAGE;
+
+
+		
+}
+
+
+
+function reportChanges(){
+	
+	showHeaderSearchLanding($username, $accessLvl);
+
+
+	$typeOFRefundSearch=array('refund_id','status_before','status_after','date','comments');
+
+	//refund_id, status_before,status_after,date,comments
+//<br> If left blank, by default it will return all refund status changes made during the past month.
+print <<<EDITUSERPAGE
+<center><h2 align="center">REFUND STATUS CHANGES:</h2>
+
+<center>Please select the date range and the value you would like to search for. 
+<br> Then click 'Continue', to perform the search : </center>	
+
+
+
+	<form method="POST" action="{$_SERVER['PHP_SELF']}" name="search_refunds_changes">
+  <table style="width: 100%" border="0">
+	<tbody>
+	
+	
+		<tr><td>
+					<center><p>FROM Date: 
+					<input type="text" name="datepickerSTART" id="datepickerSTART">
+					&nbsp;
+					TO Date: 
+					<input type="text" name="datepickerEND" id="datepickerEND"></p></center>
+		</td></tr>
+				<br><br>
+				<tr><td>&nbsp;</td></tr>
+			
+	  <tr><td><center> SEARCH By: &nbsp;&nbsp;&nbsp;&nbsp;
+		  <select name="refund_search_term_changes">
+EDITUSERPAGE;
+
+foreach($typeOFRefundSearch as $key => $value){
+	print "<option value=\"{$value}\">{$value}</option>";	
+	//print $selected; ">{$value}</option>";	
+}
+
+
+print <<<EDITUSERPAGE
+		  </select>
+		&nbsp;
+	  Matching Value: <input type="text" name="changeMatchingValue" value="" /> </center></td></tr>
+
+EDITUSERPAGE;
+
+
+	 ?>
+	 
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<link rel="stylesheet" href="/resources/demos/style.css">
+
+
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		</script>	 
+	 
+	 <?php
+	// echo 'self';
+	// echo $_SERVER['PHP_SELF'];
+	
+//	include 'dump_all_page_contents.php';
+	 
+print <<<EDITUSERPAGE
+
+	  
+	</tbody>
+  </table>
+  <input type="hidden" name="_search_submit_changes" value="1" />
+  <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
+
+
+  <br/><br>
+  
+	<hr>
+ <br/>
+  
+  
+  	<tr><td colspan="2"><center><button name="generateReport" value="generateReport" type="submit">GENERATE REPORT</button></center></td></tr>
+
+
+  </form>
+EDITUSERPAGE;
+
+
+		
+}
+
 function trackRefundChanges($status_before,$status_after,$comments){
 	include 'connectToDB.php'; 
 	
@@ -5470,23 +6261,5 @@ function trackRefundChanges($status_before,$status_after,$comments){
 }
 
 
-				/*
- 				$headers = array ('From' => $from,
-  				 'To' => $to,
-   			 'Subject' => $subject);
-			 	$smtp = Mail::factory('smtp',
-   				array ('host' => $host,
-     				'port' => $port,
-     				'auth' => true,
-     				'username' => $username,
-     				'password' => $password));
- 
- 				$mail = $smtp->send($to, $headers, $body);
-				
-			
- 				if (PEAR::isError($mail)) {
-  				 echo("<p>" . $mail->getMessage() . "</p>");
- 			 	} 
-						*/
 
 ?>
