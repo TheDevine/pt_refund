@@ -120,7 +120,7 @@ if(isset($_GET)){
 		else
 			$_SESSION['order']=" amount ASC";
 		
-		///echo 'session order is: <br>';
+		//echo 'session order is: <br>';
 		//echo $_SESSION['order'].'<br><br>';
 	}
 	
@@ -142,6 +142,8 @@ if(isset($_GET)){
 		//echo $_SESSION['order'].'<br><br>';
 	}
 	
+	//below actually stores the place from which the initial landing page of refunds is displayed to user, directly after logging in for the first time.
+//echo '<center>'; include 'validateLogin.php';   echo '</center>';
 	
 }
 

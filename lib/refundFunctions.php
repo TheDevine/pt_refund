@@ -693,6 +693,9 @@ if( isset($_SESSION['username']) && isset($_SESSION['access']) ){
 
 function mail_presets($to,$status){
 	
+	
+		//echo 'presets here';
+	
 		$from = "Patient Refund <noreply@chcb.org>";
 		$subject = "Updated Patient Refund Request";
 		$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been updated. Please login to the Patient Refund web application to review.";
@@ -704,6 +707,8 @@ function mail_presets($to,$status){
 
 		$username = "jonathan@jonathanbowley.com";
 		$password = "paw52beh";
+		echo '<br>';
+			//echo 'presets after';
 		
 		echo $from;
 		echo '<br>';
@@ -717,12 +722,17 @@ function mail_presets($to,$status){
 		echo $body;
 		echo '<br>';
 		
+		//echo 'BOOOO';
+		
+		/*
+		
 		echo $host;
 		echo '<br>';
 		
 		echo $port;
 		echo '<br>';
 		
+		*/
 		//sendOutEmail($from, $to, $subject,$body,$host,$port);
 
 		
@@ -1649,7 +1659,7 @@ function executeTheApprove(){
 	
 	
 	
-	echo 'am i over here';
+	//echo 'am i over here';
 	
 	showHeader($username, $accessLvl);
 	include 'connectToDB.php'; 
@@ -1684,15 +1694,17 @@ function executeTheApprove(){
 
 		//if(strtoupper($rowquery_dept_name[0])=="ACCOUNTING"){
 	
-	if ($rowquery_dept_name[0]=="PAR2"){
+	//if ($rowquery_dept_name[0]=="PAR2"){
+	if ($rowquery_dept_name[0]=="Billing"){	
 		
-			echo 'where';
+			//echo 'where';
 	
 			if($_POST['amount']>500){ //set status PAR2 Initial because it will require double approval
 
 				//update the record in the DB as voided
 				//sets both the status field to voided as well as the voided flag to 1
-				
+				echo 'current status ';
+				echo $_POST['status'];
 					if($_POST['status']=="PAR2 Initial"){//if already initially approved
 					
 		
@@ -1866,11 +1878,11 @@ function executeTheApprove(){
 		//IF THE REFUND WAS MARKED URGENT: email Erika as well
 		if($_POST['urgent']=='y'){ //verify that this works as intended
 
-			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of ".$_POST['amount'] ." has been approved. <br>
-			The new status for this refund is: ".$newStatus." <br> This refund is marked as URGENT.";
+			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br> 
+			<br> This refund is marked as URGENT.";
 			$from = "Patient Refund <noreply@chcb.org>";
 			$subject = "Updated Patient Refund Request";
-			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
+			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
 			$body .="<br>Status: ".$status;
 				
 				
@@ -1902,11 +1914,11 @@ function executeTheApprove(){
 		}else{
 			
 
-			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of ".$_POST['amount'] ." has been approved. <br>
-			The new status for this refund is: ".$newStatus;
+			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br>";
+		
 			$from = "Patient Refund <noreply@chcb.org>";
 			$subject = "Updated Patient Refund Request";
-			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been rejected. Please login to the Patient Refund web application to review.";
+			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
 			$body .="<br>Status: ".$status;
 				
 				
@@ -1943,7 +1955,7 @@ function executeTheApprove(){
 	///////////////END EMAIL NOTIFICATIONS
 	
 
-	print '<h3 align="center"> Refund with Refund ID:  '.$_POST['refund_id'].' has been approved! <br> The new status is: ' .$newStatus.'</h3>';
+	print '<h3 align="center"> Refund with Refund ID:  '.$_POST['refund_id'].' has been approved! </h3>';
 	print '<h4 align="center"><a href="index.php">Return to Refunds Page</a></h4>';
 	echo '<br>';
 
@@ -6256,7 +6268,7 @@ function trackRefundChanges($status_before,$status_after,$comments){
 	
 	$result = mysqli_query($db,$queryStatusChange);
 	
-	var_dump($result);
+	//var_dump($result);
 	
 }
 

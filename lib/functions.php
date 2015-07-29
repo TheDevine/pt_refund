@@ -490,11 +490,19 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	echo '<br>';
 	*/
 
+	//include 'dump_all_page_contents.php';
+	
+	if(isset($_GET['page_number'])){
+		$pageNumRedirect="&page_number=";
+		$pageNumRedirect.=$_GET['page_number'];
+	}else{
+		$pageNumRedirect="&page_number=1";
+	}
 	
 	if($sizeOfResultSet){
 		
 		if(strtoupper($rowquery_dept_name[0])=="PAR2"){
-			 print '<p align="center"> Billing Refund Requests which you\'ve Requested:</p>';
+			 print '<p align="center"> Refund Requests which you\'ve Requested:</p>';
 		
 		}else{
 			print '<p align="center"> All '.$rowquery_dept_name[0].' Refund Requests:</p>';
@@ -502,14 +510,14 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 		print '<div align = "center">';
 		print '<table border="1" cellpadding = "3"><tr>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_num=y>ENCOUNTER Number</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?refund_id=y>Refund ID</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y>Date Requested</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y>Urgent</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?requested_by=y>Requested By</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?payable_order=y>Payable To</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?amount_order=y>Amount</a></b></center></td>
-		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Status</a></b></center></td>';
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_num=y'.$pageNumRedirect.'>ENCOUNTER Number</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?refund_id=y'.$pageNumRedirect.'>Refund ID</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y'.$pageNumRedirect.'>Date Requested</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y'.$pageNumRedirect.'>Urgent</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?requested_by=y'.$pageNumRedirect.'>Requested By</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?payable_order=y'.$pageNumRedirect.'>Payable To</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?amount_order=y'.$pageNumRedirect.'>Amount</a></b></center></td>
+		<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y'.$pageNumRedirect.'>Status</a></b></center></td>';
 
 	
 		
@@ -536,6 +544,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 			$result_display_ctr++;
 			
+				/*
 				if($row['urgent']){
 					print '<tr class="urgent" >';
 				}
@@ -548,6 +557,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 				}else{
 					print '<tr>';
 				}
+				*/
 				
 				/*
 				
@@ -556,6 +566,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 					15Days=yellow;
 					new=00BB00;
 					completed=white;
+					*/
 					
 					if($row['urgent']){
 					print '<tr bgcolor=#EE0000 height=50>';
@@ -570,7 +581,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 					print '<tr>';
 					}
 				
-				*/
+				
 				
 				
 				print '<td><a href="search_landing.php?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>';
@@ -606,7 +617,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	//}
 		echo '<center>';
 			 echo 'TOTAL Results: '.$numResultENTIRERows.' Records ';
-			 echo '<h2>'.ceil($numResultENTIRERows/$_SESSION['RowsPerPage']).' Pages </h2>';
+			 echo '<h2>'.ceil($numResultENTIRERows/$_SESSION['RowsPerPage']).' Page(s) </h2>';
 		echo '</center>';
 	
 }else{

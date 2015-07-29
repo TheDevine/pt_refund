@@ -120,6 +120,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 			if(validateNewRefund($errors)=='valid') //if no errors, create user in db and show success message
 			{
 				
+				$successfullUpload=0;
 
 				if(!isset($_POST['urgent'])){
 					$_POST['urgent']=0;
@@ -141,9 +142,11 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				$last_id = mysqli_insert_id($db);
 				
 				//upload any attachments that have been added with the refund
-				uploadFiles($last_id);
+				$successfulUpload=uploadFiles($last_id);
 				
 
+				if($successfulUpload==1){
+				
 				if(sizeof($_POST['encounters'])>1){
 
 					foreach($_POST['encounters'] as $key => $value){
@@ -177,9 +180,10 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				//dynamically build the to address from the username selected based on the recipients specified by the step in the process
 				$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
 				
-				
+			
 				if($_POST['urgent']){ //verify that this works as intended
 				
+	
 					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$last_id." has been requested. <br>  This refund is marked as URGENT.";
 				
 
@@ -188,7 +192,9 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been updated. Please login to the Patient Refund web application to review.";
 					$body .="<br>Status: ".$status;
 						
-						
+					echo '<br><br>';
+					echo 'Sample EMAIL Feilds: ';
+					echo '<br>';
 					echo 'the from field is ';
 					echo $from;
 					echo '<br><br>';
@@ -201,16 +207,24 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					echo $subject;
 					echo '<br><br>';
 					
-					echo 'the body of the email is something to the effect of: ';
+					echo 'the body of the email is something to the effect of: <br>';
 					echo $body;
 					
 					echo '<br><br>';
 
+					print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
+					print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
 				
 					mail_presets($to,$status); //creator
 					mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
+					
+				print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
+				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
+					
+					
 				}else{
 		
+
 					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$last_id." has been requested.";
 						
 					$from = "Patient Refund <noreply@chcb.org>";
@@ -218,6 +232,11 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been updated. Please login to the Patient Refund web application to review.";
 					$body .="<br>Status: ".$status;
 						
+						
+						
+									echo '<br><br>';
+					echo 'Sample EMAIL Feilds: ';
+					echo '<br>';
 						
 					echo 'the from field is: ';
 					echo $from;
@@ -232,7 +251,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					echo '<br><br>';
 
 					
-					echo 'the body of the email is something to the effect of: ';
+					echo 'the body of the email is something to the effect of: <br>';
 					echo $body;
 					
 					echo '<br><br>';
@@ -241,19 +260,42 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					echo '<br>';
 					*/
 					
+				print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
+				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
+
 
 					mail_presets($to,$status);
+					
+				print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
+				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
 					
 				}
 								
 				//END Send Emails Upon Creation ////////////////////////////////////////////////////////////////////////////////////////
 				
 				//show success message
-				print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
-				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
+			//	print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
+			//	print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
 							
+			
+			
+				}else{ //unsuccessful upload, back everything out
+					
+					$query="DELETE FROM refund WHERE refund_id='{$last_id}'";
+
+					$result = mysqli_query($db,$query);
+					
+					var_dump($result);
+					//$last_id = mysqli_insert_id($db);
+						
+				}
+			
+
+			
+			
 			} else {
 				
+
 
 				//show errors at top of page
 				print '<h2 class = "error"> The following errors were encountered:</h2>';
@@ -261,19 +303,13 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				print implode('</li><li>', $errors);
 				print '</li></ul>';
 
-				//var_dump($errors);
-				
-				//echo 'the refund was not validated <br>';
-				//include 'dump_all_page_contents.php';
 
-				//die();
-				//echo 'going to the else';
-				//die();
 
 				showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));
 			}
 			
 			//if errors exist, show page again & fill in values
+		
 		
 		} else { //form has not been submitted
 
@@ -340,10 +376,13 @@ function uploadFiles($refundID_just_created){
 				die('There was an error creating the folder in which to upload your documents.  Please make sure you have read write permissions on the 
 				machine you are using.  If the error persists, please contact your local network administrator.');
 			}else{
-				for($x=1;$x<5;$x++){//build up string of filenames
+				for($x=1;$x<=5;$x++){//build up string of filenames
 					
 					$fileBaseName="file";
 					$fileBaseName.=(string)$x;
+					
+					if(strlen($_FILES[$fileBaseName]["name"])>0){
+		
 					
 						$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
 						
@@ -352,7 +391,8 @@ function uploadFiles($refundID_just_created){
 
 						
 						// Check if file already exists
-						if (file_exists($target_file) && strlen($target_file)) {
+						if (file_exists($target_file)) {
+		
 							echo "Sorry, file already exists. <br>";
 							$uploadOk = 0;
 						}
@@ -367,11 +407,13 @@ function uploadFiles($refundID_just_created){
 						if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
 						&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
 						&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
+			
 							echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
 							$uploadOk = 0;
 						}
 						// Check if $uploadOk is set to 0 by an error
 						if ($uploadOk == 0) {
+							
 							echo "Sorry, your file was not uploaded.";
 							// if everything is ok, try to upload file
 						} else {
@@ -383,11 +425,18 @@ function uploadFiles($refundID_just_created){
 								}
 							}		
 
+					}
 
 				}
 
 		}
 	
+	}
+	
+	if($uploadOk==1){
+		return 1;
+	}else{
+		return 0;
 	}
 }
 	
@@ -411,7 +460,7 @@ function validateNewRefund (&$errors){
 		}
 		
 		if($ctr_attachments<3){
-			$errors[]='In order to complete the refund creation Commercial Refunds Require at least two documents to be attached.';	
+			$errors[]='In order to complete the refund creation Commercial Refunds Require at least three documents to be attached.';	
 
 		}
 
@@ -485,7 +534,7 @@ function validateNewRefund (&$errors){
 		
 	}elseif(strlen($_POST['encounters'][0])<3){
 		
-		$errors[]='Encounter Numbers must be at least three digits long.';	
+		$errors[]='Encounter Numbers are required and must be at least three digits long.';	
 
 	}
 	

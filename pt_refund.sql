@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 28, 2015 at 11:46 PM
+-- Generation Time: Jul 29, 2015 at 06:15 PM
 -- Server version: 5.6.17
 -- PHP Version: 5.5.12
 
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `refund` (
   PRIMARY KEY (`refund_id`),
   KEY `created_by` (`created_by`),
   KEY `approved_by` (`approved_by`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=87 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=101 ;
 
 --
 -- Dumping data for table `refund`
@@ -261,7 +261,21 @@ INSERT INTO `refund` (`NG_enc_id`, `refund_id`, `created_by`, `approved_by`, `dt
 ('65433', 83, 74, NULL, '2015-07-27 17:50:32', NULL, '499.00', '123456', '2015-07-01 00:00:00', 'under five hundred', '123', '', 'Burlington', 'VA', '12321', 'dsf', NULL, 'COMPLETED', NULL, NULL, 'dsf', 75, '2015-07-27 18:12:36', NULL, 0, 0, 0, 0, 0, 0, 74, '', NULL),
 ('335577', 84, 14, NULL, '2015-07-27 19:45:32', NULL, '88888.00', '', '0000-00-00 00:00:00', 'dsf', 'sdf', '', 'Burlington', 'VT', '12321', 'dsf', NULL, 'PAR2 Initial', NULL, NULL, 'dsf', 74, '2015-07-27 20:28:16', NULL, 0, 0, 0, 0, 0, 0, 14, '', NULL),
 ('84756', 85, 14, NULL, '2015-07-27 20:20:21', NULL, '55555.00', '', '0000-00-00 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12321', 'sdsf', NULL, 'PAR2 Initial', NULL, NULL, 'dsf', 74, '2015-07-27 20:24:33', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
-('7531', 86, 14, NULL, '2015-07-27 21:33:19', NULL, '9876.00', '123456', '2015-07-01 00:00:00', 'me', 'sdf', '', 'Burlington', 'VT', '05401', 'sdf', NULL, 'COMPLETED', NULL, NULL, 'dsf', 75, '2015-07-27 21:42:14', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial');
+('7531', 86, 14, NULL, '2015-07-27 21:33:19', NULL, '9876.00', '123456', '2015-07-01 00:00:00', 'me', 'sdf', '', 'Burlington', 'VT', '05401', 'sdf', NULL, 'COMPLETED', NULL, NULL, 'dsf', 75, '2015-07-27 21:42:14', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('4567', 87, 14, NULL, '2015-07-29 14:02:35', NULL, '333333.00', '', '0000-00-00 00:00:00', 'me', 'sdf', '', 'Burlington', 'VT', '05401', 'dsf', NULL, 'NEW', NULL, NULL, 'sdf', NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('45236', 88, 14, NULL, '2015-07-29 14:11:32', NULL, '3434343.00', '', '0000-00-00 00:00:00', 'sdf', 'dsf', '', 'Burlington', 'VT', '12321', 'sdf', NULL, 'NEW', NULL, NULL, 'dsf', NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('12345', 89, 14, NULL, '2015-07-29 14:18:11', NULL, '12321.00', '', '0000-00-00 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12312', 'sfs', NULL, 'NEW', NULL, NULL, 'sdf', NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('23423', 90, 14, NULL, '2015-07-29 14:22:12', NULL, '3434343.00', '', '0000-00-00 00:00:00', 'sdf', 'dfs', '', 'Burlington', 'VT', '12321', 'dsf', NULL, 'NEW', NULL, NULL, 'sdf', NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('34533', 91, 14, NULL, '2015-07-29 14:26:33', NULL, '343434.00', '', '0000-00-00 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12332', 'dsf', NULL, 'NEW', NULL, NULL, 'dsfds', NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('32342', 92, 14, NULL, '2015-07-29 14:40:00', NULL, '342343.00', '', '0000-00-00 00:00:00', 'me', 'sdf', '', 'Burlington', 'VT', '12312', 'sdf', NULL, 'PAR2 Initial', NULL, NULL, 'fsfds', 74, '2015-07-29 15:49:42', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('234235566', 93, 14, NULL, '2015-07-29 14:43:53', NULL, '32454.00', '', '0000-00-00 00:00:00', 'sdf', 'dsf', '', 'Burlington', 'VT', '12321', 'dsf', NULL, 'ACCOUNTING APPROVAL', NULL, NULL, 'sdfs', 74, '2015-07-29 15:48:36', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('234233333', 94, 14, NULL, '2015-07-29 14:47:16', NULL, '345435.00', '', '0000-00-00 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12321', 'sdf', NULL, 'ACCOUNTING APPROVAL', NULL, NULL, 'sdf', 73, '2015-07-29 15:39:09', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('1232223232', 95, 14, NULL, '2015-07-29 14:51:20', NULL, '23423.00', '1232133232', '2015-07-29 00:00:00', 'sdf', 'sdf', '', 'Burlington', 'VT', '12321', 'dsf', NULL, 'COMPLETED', NULL, NULL, 'dsf', 75, '2015-07-29 15:55:44', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('212321', 96, 14, NULL, '2015-07-29 16:06:20', NULL, '333333.00', '', '0000-00-00 00:00:00', 'sdf', 'dsf', '', 'Burlington', 'VT', '12321', 'dsf', NULL, 'ACCOUNTING APPROVAL', NULL, NULL, 'dsf', 73, '2015-07-29 16:08:25', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('1232132', 97, 14, NULL, '2015-07-29 16:12:23', NULL, '99999999.99', '', '0000-00-00 00:00:00', 'SDF', 'sdfds', '', 'Burlington', 'VT', '12321', 'sdf', NULL, 'ACCOUNTING APPROVAL', NULL, NULL, 'dsfds', 73, '2015-07-29 16:15:14', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('1231231231', 98, 14, NULL, '2015-07-29 16:16:25', NULL, '13131313.00', '12321321', '2015-07-29 00:00:00', 'dsf', 'dsf', '', 'Burlington', 'VT', '12312', 'dsf', NULL, 'COMPLETED', NULL, NULL, 'sdf', 75, '2015-07-29 16:22:31', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('12312321', 99, 14, NULL, '2015-07-29 16:32:12', NULL, '99999999.99', '112321123', '2015-07-01 00:00:00', 'Derek', 'sdf', '', 'Burlington', 'VT', '12321', 'test', NULL, 'COMPLETED', NULL, NULL, 'ing', 75, '2015-07-29 16:40:32', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial'),
+('1237654', 100, 14, NULL, '2015-07-29 17:15:21', NULL, '99999999.99', '1232132122', '2015-07-29 00:00:00', 'me', 'sdf', '', 'Burlington', 'VT', '12321', 'sdf', NULL, 'COMPLETED', NULL, NULL, 'sdf', 75, '2015-07-29 17:27:23', NULL, 0, 0, 0, 0, 0, 0, 14, '', 'Commercial');
 
 -- --------------------------------------------------------
 
@@ -350,22 +364,67 @@ INSERT INTO `refund_bak` (`NG_enc_id`, `refund_id`, `created_by`, `approved_by`,
 --
 
 CREATE TABLE IF NOT EXISTS `refund_changes` (
+  `change_id` int(11) NOT NULL AUTO_INCREMENT,
   `refund_id` int(11) NOT NULL,
-  `status_before` varchar(20) NOT NULL,
-  `status_after` varchar(20) NOT NULL,
+  `status_before` varchar(30) NOT NULL,
+  `status_after` varchar(30) NOT NULL,
   `date` date NOT NULL,
   `name` varchar(30) NOT NULL,
-  `comments` text,
-  UNIQUE KEY `Refund_Id` (`refund_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `comments` text NOT NULL,
+  PRIMARY KEY (`change_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=17 ;
 
 --
 -- Dumping data for table `refund_changes`
 --
 
-INSERT INTO `refund_changes` (`refund_id`, `status_before`, `status_after`, `date`, `name`, `comments`) VALUES
-(77, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'Does this work?'),
-(86, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'the initial approval');
+INSERT INTO `refund_changes` (`change_id`, `refund_id`, `status_before`, `status_after`, `date`, `name`, `comments`) VALUES
+(1, 96, 'NEW', 'PAR2 Initial', '2015-07-01', '74', 'first approval'),
+(2, 96, 'PAR2 Initial', 'ACCOUNTING APPROVAL', '2015-07-29', '73', 'initial approval'),
+(3, 97, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'sdfs'),
+(4, 97, 'PAR2 Initial', 'ACCOUNTING APPROVAL', '2015-07-29', '73', 'second'),
+(5, 98, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'first'),
+(6, 98, 'PAR2 Initial', 'ACCOUNTING APPROVAL', '2015-07-29', '73', 'secondary approval'),
+(7, 98, 'ACCOUNTING APPROVAL', 'ACCOUNTING APPROVED', '2015-07-29', '72', 'attached check and completed'),
+(8, 98, 'ACCOUNTING APPROVED', 'COMPLETED', '2015-07-29', '75', 'Completed Today!'),
+(9, 99, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'initial approval completed'),
+(10, 99, 'PAR2 Initial', 'ACCOUNTING APPROVAL', '2015-07-29', '73', 'secondary approval completed'),
+(11, 99, 'ACCOUNTING APPROVAL', 'ACCOUNTING APPROVED', '2015-07-29', '72', 'attached check'),
+(12, 99, 'ACCOUNTING APPROVED', 'COMPLETED', '2015-07-29', '75', 'finalized'),
+(13, 100, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'billing initial approval'),
+(14, 100, 'PAR2 Initial', 'ACCOUNTING APPROVAL', '2015-07-29', '73', 'billing final'),
+(15, 100, 'ACCOUNTING APPROVAL', 'ACCOUNTING APPROVED', '2015-07-29', '72', 'attached check'),
+(16, 100, 'ACCOUNTING APPROVED', 'COMPLETED', '2015-07-29', '75', 'Derek approved');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `refund_changes_old`
+--
+
+CREATE TABLE IF NOT EXISTS `refund_changes_old` (
+  `change_id` int(11) NOT NULL AUTO_INCREMENT,
+  `refund_id` int(11) NOT NULL,
+  `status_before` varchar(30) NOT NULL,
+  `status_after` varchar(30) NOT NULL,
+  `date` date NOT NULL,
+  `name` varchar(30) NOT NULL,
+  `comments` text NOT NULL,
+  PRIMARY KEY (`change_id`),
+  UNIQUE KEY `Refund_Id` (`refund_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=11 ;
+
+--
+-- Dumping data for table `refund_changes_old`
+--
+
+INSERT INTO `refund_changes_old` (`change_id`, `refund_id`, `status_before`, `status_after`, `date`, `name`, `comments`) VALUES
+(1, 77, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'Does this work?'),
+(2, 86, 'NEW', 'PAR2 Initial', '2015-07-27', '74', 'the initial approval'),
+(3, 94, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'sdfs'),
+(4, 95, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'first billing approval'),
+(5, 93, 'NEW', 'PAR2 Initial', '2015-07-29', '73', 'first approval'),
+(7, 92, 'NEW', 'PAR2 Initial', '2015-07-29', '74', 'first');
 
 -- --------------------------------------------------------
 
@@ -417,7 +476,7 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `access_lvl`, `dept_i
 (8, 'David', 'Simmons', 'S', 2, '$6$QLQZYvc/OCcp$ar13ZHSlh7Pqod8vLyCFoQRywetkY4EPHJPfbz6yoLx1yIaCZlpucgMLZAguwU0RoMrRdLnMqfMi6mjLdTxVh0', 'dsimmons', NULL),
 (10, 'Kenderlyn', 'Phelps', 'A', 2, '$6$Lu1EHq5eHL6B$SkY67B9hhKbio0JG6xDmJFJDQiKggeRAB3EUKlsYDvliqN8DICOHzMmYoVA1p6YT6RvXYkmcywVhYG0xHIEDN.', 'kphelps', NULL),
 (11, 'Clarissa', 'Marmelejo-Stitely', 'A', 2, '$6$yLtkl6.ibCe/$aMLi2VlJ6WD0VxvdIFeddZc.TqS020ENfTwd6ekL9bkg8mUV6JAjn9TdtyiMSJx3SCtCQPUz2FuMer7mA5h0l1', 'cstitely', NULL),
-(12, 'Sandra', 'Silva', 'A', 3, '$6$TBypQYNP11bA$ji0islDQHJ8RYTk7k/BVAHmGYnFSo0Q87sTBcb8AWat9f4muiNISrS7aGbMQbsP4TtHUvzaDItcxPa6hDuX0I.', 'ssilva', NULL),
+(12, 'Sandra', 'Silva', 'A', 3, '$6$TBypQYNP11bA$ji0islDQHJ8RYTk7k/BVAHmGYnFSo0Q87sTBcb8AWat9f4muiNISrS7aGbMQbsP4TtHUvzaDItcxPa6hDuX0I.', 'ssilva', 1),
 (13, 'Erika', 'Brown', 'S', 3, '$6$aTcnaPld$jqTkLqONWxyjUkMMcYC6KO555uGbVye70o4fh0nnw.9Y36ZbQ2aTzw1JOvoa2ktARm//W7QECX/XzLVZw1htb0', 'ebrown', NULL),
 (14, 'Derek', 'Devine', 'S', 3, '$1$1E5..y5.$2.6/Ooj8IHeVysOpEOZRj0', 'ddevine', NULL),
 (18, 'Deanna', 'Hurne', 'A', 2, '$1$DZ2.QX5.$Sy5v14vTasM8069cA4Bgb/', 'dhurne', NULL),
