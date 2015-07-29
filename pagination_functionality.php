@@ -42,12 +42,19 @@ function instantiate_initialOffset(){
 	
 		//INSTANTIATE INITIAL OFFSET////////////////////////////////////////////////////////////////////////////////////////
 
-	if ($_GET['page_number']>=1){
 	
-		$_SESSION['initialOffset']=($_SESSION['RowsPerPage']*$_GET['page_number']);
-
+	if($_SESSION['just_reordered']==0){
 		
-	}else{
+		if ($_GET['page_number']>=1){
+
+			$_SESSION['initialOffset']=($_SESSION['RowsPerPage']*$_GET['page_number']);
+
+			
+		}else{
+			$_SESSION['initialOffset']=0;
+		}
+
+	}elseif($_SESSION['just_reordered']==1){
 		$_SESSION['initialOffset']=0;
 	}
 	

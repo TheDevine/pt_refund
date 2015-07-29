@@ -188,8 +188,8 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				
 
 					$from = "Patient Refund <noreply@chcb.org>";
-					$subject = "Updated Patient Refund Request";
-					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been updated. Please login to the Patient Refund web application to review.";
+					$subject = "Created Patient Refund Request";
+					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been created. Please login to the Patient Refund web application to review.";
 					$body .="<br>Status: ".$status;
 						
 					echo '<br><br>';
@@ -218,9 +218,6 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					mail_presets($to,$status); //creator
 					mail_presets("ebrown@chcb.org",$status); //email erika (ebrown@chcb.org)
 					
-				print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
-				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
-					
 					
 				}else{
 		
@@ -228,13 +225,13 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$last_id." has been requested.";
 						
 					$from = "Patient Refund <noreply@chcb.org>";
-					$subject = "Updated Patient Refund Request";
-					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been updated. Please login to the Patient Refund web application to review.";
+					$subject = "Created Patient Refund Request";
+					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been created. Please login to the Patient Refund web application to review.";
 					$body .="<br>Status: ".$status;
 						
 						
 						
-									echo '<br><br>';
+					echo '<br><br>';
 					echo 'Sample EMAIL Feilds: ';
 					echo '<br>';
 						
@@ -265,9 +262,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 
 
 					mail_presets($to,$status);
-					
-				print '<h3 align="center"> Refund for  '.$_POST['payable'].' created!</h3>';
-				print '<h4 align="center"><a href="index.php">Return to Refunds</a></h4>';
+
 					
 				}
 								
@@ -439,8 +434,8 @@ function uploadFiles($refundID_just_created){
 		return 0;
 	}
 }
-	
-	
+
+
 
 //Checks that new refund data submitted is valid or returns an array of errors
 function validateNewRefund (&$errors){
@@ -787,15 +782,15 @@ print <<<ADDREFUNDPAGE
             </td>
           </tr>
           <tr>
-          	<td>Attachment 1</td>
+          	<td>Encounter Note</td>
           	<td><input type="file" name="file1" ></td>
           </tr>
           <tr>
-          	<td>Attachment 2</td>
+          	<td>Transaction Detail Page</td>
           	<td><input type="file" name="file2"></td>
           </tr>
           <tr>
-          	<td>Attachment 3</td>
+          	<td>Commercial Paperwork</td>
           	<td><input type="file" name="file3"></td>
           </tr>
           <tr>
@@ -933,16 +928,16 @@ print <<<ADDREFUNDPAGE
             </td>
           </tr>
           <tr>
-          	<td>Attachment 1</td>
+          	<td>Encounter Note</td>
           	<td><input type="file" name="file1" ></td>
           </tr>
           <tr>
-          	<td>Attachment 2</td>
+          	<td>Transaction Detail Page</td>
           	<td><input type="file" name="file2"></td>
           </tr>
           <tr>
-          	<td>Attachment 3</td>
-          	<td><input type="file" name="file3"></td>
+          	<td>Commercial Paperwork</td>
+          	<td><input type="file" name="file3"><font color=red>* Only Required if Commercial Refund</font></td>
           </tr>
           <tr>
           	<td>Attachment 4</td>

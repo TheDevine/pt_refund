@@ -181,7 +181,7 @@ if (!isset($_GET['action'])){//add this if statement so regular page isn't shown
 		else
 			$_SESSION['order']=" NG_enc_id ASC";
 		
-
+		echo 'now im in here';
 	}
 	
 		

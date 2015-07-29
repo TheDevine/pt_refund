@@ -394,26 +394,29 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 	}elseif(strtoupper($rowquery_dept_name[0])=='ACCOUNTING'){
 		//echo $rowquery_dept_name[0];
-		$specifier= " WHERE status= 'ACCOUNTING APPROVAL' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
+		$specifier= " WHERE (status= 'ACCOUNTING APPROVAL' AND modified_by!='{$_SESSION['userid']}' ) OR (created_by='{$_SESSION['userid']}' && status!='COMPLETED' ) ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='PAR1'){
 		//echo $rowquery_dept_name[0];
-		$specifier= " WHERE status= 'ACCOUNTING APPROVED' AND modified_by!='{$_SESSION['userid']}' AND created_by!='{$_SESSION['userid']}' ";
+		$specifier= " WHERE (status= 'ACCOUNTING APPROVED' AND modified_by!='{$_SESSION['userid']}' ) OR (created_by='{$_SESSION['userid']}' && status!='COMPLETED' ) ";
 	}elseif(strtoupper($rowquery_dept_name[0])=='PAR2'){
 		//echo $rowquery_dept_name[0];
-		$specifier= " WHERE created_by='{$_SESSION['userid']}' ";
+		$specifier= " WHERE created_by='{$_SESSION['userid']}' && status!='COMPLETED' ";
 		//$specifier= " WHERE U.dept_id='1' AND created_by=='{$_SESSION['userid']}' ";
 		//PAR2 can only create, so they are presented with only the refunds PAR2s have created	
 	}elseif($rowquery_dept_name[0]=='Billing'){
 		//echo $rowquery_dept_name[0];
-		$specifier= " WHERE status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' ";
+		$specifier= " WHERE (status='NEW' OR status='PAR2 Initial' AND modified_by!='{$_SESSION['userid']}' ) OR (created_by='{$_SESSION['userid']}' && status!='COMPLETED' ) ";
 	}
-		/*
+	
+	/*
 	echo $rowquery_dept_name[0];
 	echo '<br>';
 	echo 'specifier is ';
 	echo $specifier;
 	echo '<br>';
 	*/
+	
+	
 	
 	if($accessLvl == 'U'){//is access is only at the user level, then must match the refunds pulled to display only the current users created refunds
 
@@ -460,11 +463,11 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 	}
 	
-	/*
+	
 	echo 'the query is <br>';
 	echo $query;
 	echo '<br>';
-	*/
+	
 	$result = mysqli_query($db,$query); 
 	$row = @mysqli_fetch_array($result);
 	$sizeOfResultSet=sizeof($row);	
@@ -492,12 +495,31 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 	//include 'dump_all_page_contents.php';
 	
-	if(isset($_GET['page_number'])){
+	echo $_SESSION['just_reordered'];
+	echo '<br>';
+	
+	
+	if($_SESSION['just_reordered']==1){
+		$pageNumRedirect="&page_number=1";
+		$_SESSION['just_reordered']=0;
+	}
+
+	/*
+	if(isset($_GET['page_number']) && isset($_GET['page_number'])){
 		$pageNumRedirect="&page_number=";
 		$pageNumRedirect.=$_GET['page_number'];
 	}else{
 		$pageNumRedirect="&page_number=1";
 	}
+	*/
+	
+	if ($rowquery_dept_id['dept_id']==3){ //3 is PAR2, only PAR2 creates
+
+		print '<h3 align="center"><a href="addrefund.php">Create a NEW Refund Request</a></h3>';
+		echo '<br>';
+	}
+	
+	
 	
 	if($sizeOfResultSet){
 		
@@ -626,10 +648,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 }
 
-	if ($rowquery_dept_id['dept_id']==3){ //3 is PAR2, only PAR2 creates
 
-		print '<h3 align="center"><a href="addrefund.php">Create a NEW Refund Request</a></h3>';
-	}
 
 	showFooter();
 	

@@ -82,7 +82,7 @@ if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 		reportAccountingApproved();
 	}
 	elseif($_GET['report_id']==4){
-		reportBillingInitial();
+		reportBillingInitial(); //changed to pending accounting approval
 	}
 	elseif($_GET['report_id']==5){
 		reportBillingFinal();
@@ -161,12 +161,17 @@ elseif(isset($_POST)){
 	
 	elseif(isset($_POST['_approve_submit']) && $_POST['_approve_submit']!="" && $_POST['_approve_submit']!=NULL){ 
 
+		//var_dump($_FILES);
+
+		
+		
+		
 		//include 'dump_all_page_contents.php';
 		//die();
-		if( $_POST['status']=='ACCOUNTING APPROVAL' && ((!strlen($_POST['check_date'])>0)  || (!strlen($_POST['check_nbr'])>0))) {
+		if( $_POST['status']=='ACCOUNTING APPROVAL' && ((!strlen($_POST['check_date'])>0)  || (   !$_FILES['check']['size']>0    ))  ) {
 			
 			$errors=array();
-			$errors[]='You must attach a check and indicate the check date in the appropriate fields. <br>';
+			$errors[]='You must attach a check and indicate the check date in the appropriate field. <br>';
 			if(!is_numeric($_POST['check_nbr'])){
 				$errors[]='Check Numbers can contain numerals only.';
 			}
@@ -174,8 +179,34 @@ elseif(isset($_POST)){
 			$errors=array();
 			$errors[]='Check Numbers can contain numerals only.';
 
+		}elseif($_POST['status']=='ACCOUNTING APPROVAL'){
+			
+			//var_dump($_FILES);
+			echo 'do I ever come here';
+			//var_dump($_POST['check']);
+			echo '<br>';
+			//echo $_POST['check'];
+			
+			//uploadCheck($_POST['check']);
+			uploadCheck();
+			
+	
 		}
 		
+		echo 'begg';
+		echo '<br>';
+		
+
+		echo $_POST['status'];
+		echo '<br>';
+		
+		echo strlen($_POST['check_date']);
+		echo '<br>';
+		
+		echo strlen($_POST['check']);
+		echo '<br>';
+		
+		echo 'end';
 		
 		if($errors){
 			
@@ -215,6 +246,46 @@ EDITUSERPAGE;
 	
 	
 }
+
+//function uploadCheck($checkFileAttached){
+	
+function uploadCheck(){
+	
+	$target_dir = "uploads/".$_POST['refund_id']."/";
+	$target_file="";
+	
+	$target_file = $target_dir . basename($_FILES['check']['name']);
+	
+	if (!file_exists($target_dir )) { 
+	
+			die('There was an error uploading to the folder associated with this refund ID.  Please make sure you have read write permissions on the 
+				machine you are using.  If the error persists, please contact your local network administrator.');
+	
+	}else{
+		
+		$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+		if($imageFileType != "pdf") {
+			//echo "Sorry, only PDF file types are allowed. <br>";
+			die('Sorry, only PDF file types are allowed. <br>');
+			$uploadOk = 0;
+		}else{
+					
+			if (move_uploaded_file($_FILES['check']["tmp_name"], $target_file)) {
+				
+				//$checkFileAttached
+				
+				echo $_FILES['check']['name'].' has been successfully uploaded to the refund folder with ID '.$_POST['refund_id'];
+		
+			}
+
+		}
+
+	}
+	//die();
+
+}
+	
 
 
 function showFooter(){
@@ -1093,7 +1164,7 @@ EDITUSERPAGE;
 
 	print <<<EDITUSERPAGE
 		 	  
-	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_void_submit">Void Refund</button>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_void_submit">Cancel Refund</button>
 
 
 	  </form>
@@ -1117,7 +1188,50 @@ EDITUSERPAGE;
 		
 		$_SESSION['return_URI']=$_SERVER['REQUEST_URI'];
 		
+		
+		
+		//GENERATE A LIST OF ALL THE ENCOUNTERS IF THERE ARE MULTIPLE///////////////////////////////////////////////////////////////			
+		
+		if(isset($_GET['refund_id'])){
+				
+				$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_GET['refund_id']}'";	
+				$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
 
+
+			}else{
+				
+				$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_POST['refund_id']}'";	
+				$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+			}
+
+			
+
+			$arrayOFEncounters=array();
+			$numOfEncountersCtr=0;
+
+			while($rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters)){
+
+					foreach($rowHowManyEncounters as $key => $value){
+
+							IF(is_numeric($key) && $value!=$row['NG_enc_id']){		
+								
+								if(!$key ){ //only add to the array if $key is 0 because these hold the encounter ids 
+										   //while pos 1 holds the same repeated refund_id
+									$arrayOFEncounters[$numOfEncountersCtr]=$value;
+									$numOfEncountersCtr++;
+
+								}
+							}
+						}
+			}
+
+				
+		$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
+		$result_dept_id = mysqli_query($db,$query_dept_id);
+		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
+	
+		//GENERATE A LIST OF ALL THE ENCOUNTERS IF THERE ARE MULTIPLE///////////////////////////////////////////////////////////////	
+			
 	//	gfd
 	print <<<EDITUSERPAGE
 <h2 align="center">EDIT Refund</h2>
@@ -1126,6 +1240,13 @@ EDITUSERPAGE;
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
       <table style="width: 100%" border="1">
         <tbody>
+		
+		
+			<tr>
+          	<td><b>Refund ID</b></td>
+          	<td><input maxlength="50" readonly name="refund_id" type="text" value ="{$row['refund_id']}"><br />
+          </tr>
+		
           <tr>
             <td>Date Requested</td>
 
@@ -1165,12 +1286,38 @@ EDITUSERPAGE;
             <td><input  maxlength="10" name="zip" type="text" readonly value="{$row['zip']}">
             </td>
           </tr>
+		  
+		  
+		  
           <tr>
             <td>Encounter Number</td>
             <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
-          <tr>
+EDITUSERPAGE;
+
+
+	
+		if(sizeof($arrayOFEncounters)>0){
+		
+		foreach($arrayOFEncounters as $key => $value){
+			
+				print <<<EDITUSERPAGE
+					<tr>
+						<td>Additional Encounter Number: </td>
+						<td><input name="duplicate_enc_nbr" type="text" readonly value="{$value}">
+						</td>
+					</tr>	
+EDITUSERPAGE;
+				
+			}
+	}
+
+
+		
+
+	print <<<EDITUSERPAGE
+      <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
             </td>
@@ -1190,7 +1337,13 @@ EDITUSERPAGE;
       <input type="hidden" name="_edit_submit" value="1" />
       <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
 	  <br/>
+	  
+	  
+		  
+	  
+    
 EDITUSERPAGE;
+
 
 	displayRefundUploads($row['refund_id']);
 
@@ -1202,25 +1355,39 @@ EDITUSERPAGE;
 	 
 	 }
 
-	print <<<EDITUSERPAGE
-		 	  
-	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_void_submit">Void Refund</button>
-
-EDITUSERPAGE;
+	
 
 
  if ($_SESSION['userid']!=$row['created_by']){ //only allow them to approve or reject the refund if they didnt created it
 	 
-	print <<<EDITUSERPAGE
+
+		if($rowquery_dept_id['dept_id']==4){
+			print <<<EDITUSERPAGE
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_app_submit">Complete Refund</button>
+EDITUSERPAGE;
+			
+		}else{
+			
+print <<<EDITUSERPAGE
 		 	  
-	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_rej_submit">Reject Refund</button>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_void_submit">Cancel Refund</button>
 
 EDITUSERPAGE;
+			
+if($rowquery_dept_id['dept_id']!=2){
+	
+print <<<EDITUSERPAGE
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_rej_submit">Reject Refund</button>
+EDITUSERPAGE;
+
+}			
 	
 	print <<<EDITUSERPAGE
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_app_submit">Approve Refund</button>
 EDITUSERPAGE;
 	 }
+	 
+ }
 	 	print <<<EDITUSERPAGE
 		 	  
 	  </form>
@@ -1528,7 +1695,7 @@ function showDelPage($username='', $accessLvl = '', $errors = ''){ //page where 
       <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
 	  <br/>
 
-	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="void" name="Void">Void Refund</button>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="void" name="Void">Cancel Refund</button>
 	  </form>
 EDITUSERPAGE;
 
@@ -1841,6 +2008,96 @@ function executeTheApprove(){
 					print mysqli_error($result);
 				}
 				
+					///////////////////////BEGIN EMAIL NOTIFICATION/////////////////////////////////////////////////////////////////////////////
+					$query = "SELECT username FROM users WHERE user_id='{$_SESSION['userid']}'";
+					$result = mysqli_query($db,$query);
+					$rowUserNames=mysqli_fetch_array($result);
+					
+					//Functionality: creator gets emailed upon REJECTION
+					//dynamically build the to address from the username selected based on the recipients specified by the step in the process
+					$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
+					
+					//IF THE REFUND WAS MARKED URGENT: email Erika as well
+					if($_POST['urgent']=='y'){ //verify that this works as intended
+
+						$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br> 
+						<br> This refund is marked as URGENT.";
+						$from = "Patient Refund <noreply@chcb.org>";
+						$subject = "Updated Patient Refund Request";
+						$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
+						$body .="<br>Status: ".$status;
+							
+							
+						echo 'the from field is <br>';
+						echo $from;
+						echo '<br>';
+						
+						echo 'the to field is <br>';
+						echo $to;
+						echo '<br>';
+						
+															
+						echo 'the status is <br>';
+						echo $status;
+						echo '<br>';
+						
+
+						echo 'the subject is <br>';
+						echo $subject;
+						echo '<br>';
+						
+						echo 'the body of the email is something to the effect of: <br>';
+						echo $body;
+						
+						echo '<br>';
+						mail_presets($to,$status); //notify creator
+						mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org)
+						
+					}else{
+						
+
+						$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br>";
+					
+						$from = "Patient Refund <noreply@chcb.org>";
+						$subject = "Updated Patient Refund Request";
+						$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
+						$body .="<br>Status: ".$status;
+							
+							
+						echo 'the from field is <br>';
+						echo $from;
+						echo '<br>';
+						
+						echo 'the to field is <br>';
+						echo $to;
+						echo '<br>';
+						
+															
+						echo 'the status is <br>';
+						echo $status;
+						echo '<br>';
+						
+						
+						
+						echo 'the subject is <br>';
+						echo $subject;
+						echo '<br>';
+						
+
+						echo 'the body of the email is something to the effect of: <br>';
+						echo $body;
+						
+						echo '<br>';
+
+						mail_presets($to,$status);//notify creator
+						
+					}
+
+
+				///////////////END EMAIL NOTIFICATIONS
+
+				
+				
 		}elseif($rowquery_dept_name[0]=="PAR1"){
 			
 					$query = "UPDATE refund SET 
@@ -1866,93 +2123,6 @@ function executeTheApprove(){
 		}		
 		
 		
-		///////////////////////BEGIN EMAIL NOTIFICATION/////////////////////////////////////////////////////////////////////////////
-		$query = "SELECT username FROM users WHERE user_id='{$_SESSION['userid']}'";
-		$result = mysqli_query($db,$query);
-		$rowUserNames=mysqli_fetch_array($result);
-		
-		//Functionality: creator gets emailed upon REJECTION
-		//dynamically build the to address from the username selected based on the recipients specified by the step in the process
-		$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
-		
-		//IF THE REFUND WAS MARKED URGENT: email Erika as well
-		if($_POST['urgent']=='y'){ //verify that this works as intended
-
-			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br> 
-			<br> This refund is marked as URGENT.";
-			$from = "Patient Refund <noreply@chcb.org>";
-			$subject = "Updated Patient Refund Request";
-			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
-			$body .="<br>Status: ".$status;
-				
-				
-			echo 'the from field is <br>';
-			echo $from;
-			echo '<br>';
-			
-			echo 'the to field is <br>';
-			echo $to;
-			echo '<br>';
-			
-												
-			echo 'the status is <br>';
-			echo $status;
-			echo '<br>';
-			
-
-			echo 'the subject is <br>';
-			echo $subject;
-			echo '<br>';
-			
-			echo 'the body of the email is something to the effect of: <br>';
-			echo $body;
-			
-			echo '<br>';
-			mail_presets($to,$status); //notify creator
-			mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org)
-			
-		}else{
-			
-
-			$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br>";
-		
-			$from = "Patient Refund <noreply@chcb.org>";
-			$subject = "Updated Patient Refund Request";
-			$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
-			$body .="<br>Status: ".$status;
-				
-				
-			echo 'the from field is <br>';
-			echo $from;
-			echo '<br>';
-			
-			echo 'the to field is <br>';
-			echo $to;
-			echo '<br>';
-			
-												
-			echo 'the status is <br>';
-			echo $status;
-			echo '<br>';
-			
-			
-			
-			echo 'the subject is <br>';
-			echo $subject;
-			echo '<br>';
-			
-
-			echo 'the body of the email is something to the effect of: <br>';
-			echo $body;
-			
-			echo '<br>';
-
-			mail_presets($to,$status);//notify creator
-			
-		}
-
-
-	///////////////END EMAIL NOTIFICATIONS
 	
 
 	print '<h3 align="center"> Refund with Refund ID:  '.$_POST['refund_id'].' has been approved! </h3>';
@@ -2049,9 +2219,45 @@ function showVoidPage($username='', $accessLvl = '', $errors = ''){ //page where
 	$result = mysqli_query($db,$query); 
 	$row = mysqli_fetch_array($result);
 
+	
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	if(isset($_GET['refund_id'])){
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_GET['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+
+
+	}else{
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_POST['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+	}
+	
+	
+	$arrayOFEncounters=array();
+	$numOfEncountersCtr=0;
+
+	while($rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters)){	
+
+			foreach($rowHowManyEncounters as $key => $value){
+
+					IF(is_numeric($key) && $value!=$row['NG_enc_id']){			
+						
+						if(!$key){ //only add to the array if $key is 0 because these hold the encounter ids 
+								   //while pos 1 holds the same repeated refund_id
+							$arrayOFEncounters[$numOfEncountersCtr]=$value;
+							$numOfEncountersCtr++;
+						}
+					}
+					
+				}
+	}
+		
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
 	print <<<EDITUSERPAGE
-<h2 align="center">Void Refund</h2>
+<h2 align="center">Cancel Refund</h2>
 <a href="index.php">Back to Refunds</a>
 <br/><br/>
 		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
@@ -2105,6 +2311,26 @@ function showVoidPage($username='', $accessLvl = '', $errors = ''){ //page where
             <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
+EDITUSERPAGE;
+
+	
+		if(sizeof($arrayOFEncounters)>0){
+		
+		foreach($arrayOFEncounters as $key => $value){
+			
+				print <<<EDITUSERPAGE
+					<tr>
+						<td>Additional Encounter Number: </td>
+						<td><input name="duplicate_enc_nbr" type="text" readonly value="{$value}">
+						</td>
+					</tr>	
+EDITUSERPAGE;
+				
+			}
+	}
+  
+	print <<<EDITUSERPAGE
+	
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
@@ -2127,7 +2353,7 @@ function showVoidPage($username='', $accessLvl = '', $errors = ''){ //page where
 	  <br/>
 
 	 
-	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="void" name="Void">Void Refund</button>
+	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="void" name="Void">Cancel Refund</button>
 	  </form>
 EDITUSERPAGE;
 
@@ -2157,6 +2383,45 @@ function showRejPage($username='', $accessLvl = '', $errors = ''){ //page where 
 	
 	$result = mysqli_query($db,$query); 
 	$row = mysqli_fetch_array($result);
+	
+	
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	if(isset($_GET['refund_id'])){
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_GET['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+
+
+	}else{
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_POST['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+	}
+	
+	
+	$arrayOFEncounters=array();
+	$numOfEncountersCtr=0;
+
+	while($rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters)){	
+
+			foreach($rowHowManyEncounters as $key => $value){
+
+					IF(is_numeric($key) && $value!=$row['NG_enc_id']){			
+						
+						if(!$key){ //only add to the array if $key is 0 because these hold the encounter ids 
+								   //while pos 1 holds the same repeated refund_id
+							$arrayOFEncounters[$numOfEncountersCtr]=$value;
+							$numOfEncountersCtr++;
+						}
+					}
+					
+				}
+	}
+		
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+	
+			  	
 	
 
 	print <<<EDITUSERPAGE
@@ -2213,6 +2478,29 @@ function showRejPage($username='', $accessLvl = '', $errors = ''){ //page where 
             <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
+
+EDITUSERPAGE;
+
+	
+	
+		if(sizeof($arrayOFEncounters)>0){
+		
+		foreach($arrayOFEncounters as $key => $value){
+			
+				print <<<EDITUSERPAGE
+					<tr>
+						<td>Additional Encounter Number: </td>
+						<td><input name="duplicate_enc_nbr" type="text" readonly value="{$value}">
+						</td>
+					</tr>	
+EDITUSERPAGE;
+				
+			}
+	}
+
+
+	
+	print <<<EDITUSERPAGE
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
@@ -2303,7 +2591,47 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
 	$result = mysqli_query($db,$query); 
 	$row = mysqli_fetch_array($result);
 	
+
+	
+	
 		if($errors || isset($_SESSION['SAVE_POST'])){
+			
+				
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	if(isset($_GET['refund_id'])){
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_GET['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+
+
+	}else{
+		
+		$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_POST['refund_id']}'";	
+		$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+	}
+	
+	
+	$arrayOFEncounters=array();
+	$numOfEncountersCtr=0;
+
+	while($rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters)){	
+
+			foreach($rowHowManyEncounters as $key => $value){
+
+					IF(is_numeric($key) && $numOfEncountersCtr>0){		
+						
+						if(!$key){ //only add to the array if $key is 0 because these hold the encounter ids 
+								   //while pos 1 holds the same repeated refund_id
+							$arrayOFEncounters[$numOfEncountersCtr]=$value;
+						}
+					}
+					$numOfEncountersCtr++;
+				}
+	}
+		
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+	
 			
 			echo 'here';
 			
@@ -2313,7 +2641,7 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
 <h2 align="center">Approve Refund</h2>
 <a href="index.php">Back to Refunds</a>
 <br/><br/>
-		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
+		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund" enctype="multipart/form-data">
       <table style="width: 100%" border="1">
         <tbody>
 		<tr>
@@ -2363,6 +2691,27 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
             <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
+
+EDITUSERPAGE;
+		  
+	
+		if(sizeof($arrayOFEncounters)>1){
+		
+		foreach($arrayOFEncounters as $key => $value){
+			
+				print <<<EDITUSERPAGE
+					<tr>
+						<td>Additional Encounter Number: </td>
+						<td><input name="duplicate_enc_nbr" type="text" readonly value="{$value}">
+						</td>
+					</tr>	
+EDITUSERPAGE;
+				
+			}
+	}
+
+		  
+print <<<EDITUSERPAGE
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
@@ -2386,6 +2735,11 @@ function showApprovePage($username='', $accessLvl = '', $errors = ''){ //page wh
             <td><input name="check_nbr" type="text" size=25  value=""></td>
           </tr>
 		  
+		    <tr>
+          	<td>Attach Check</td>
+          	<td><input type="file" name="check" ></td>
+          </tr>
+		  
 
         </tbody>
       </table>
@@ -2397,6 +2751,8 @@ EDITUSERPAGE;
 		$result_dept_id = mysqli_query($db,$query_dept_id);
 		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
 
+		
+		//uploadCheck();
 		
 		if($rowquery_dept_id['dept_id']==4){
 	print <<<EDITUSERPAGE
@@ -2432,16 +2788,57 @@ EDITUSERPAGE;
 		}
 	else{
 		
+		
+			
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		if(isset($_GET['refund_id'])){
+			
+			$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_GET['refund_id']}'";	
+			$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+
+
+		}else{
+			
+			$queryHowManyEncounters = "SELECT * FROM refund_manyencounters WHERE Refund_ID = '{$_POST['refund_id']}'";	
+			$resultHowManyEncounters = mysqli_query($db,$queryHowManyEncounters); 
+		}
+
+		
+		//var_dump($resultHowManyEncounters);
+
+		$arrayOFEncounters=array();
+		$numOfEncountersCtr=0;
+
+		while($rowHowManyEncounters = mysqli_fetch_array($resultHowManyEncounters)){	
+
+				foreach($rowHowManyEncounters as $key => $value){
+
+						IF(is_numeric($key) && $value!=$row['NG_enc_id']){			
+							
+							if(!$key){ //only add to the array if $key is 0 because these hold the encounter ids 
+									   //while pos 1 holds the same repeated refund_id
+								$arrayOFEncounters[$numOfEncountersCtr]=$value;		
+								$numOfEncountersCtr++;
+							}
+						}
+				
+					}
+		}
+			
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+
+		
+		
 		$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
 		$result_dept_id = mysqli_query($db,$query_dept_id);
 		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
 		
 	print <<<EDITUSERPAGE
-<h2 align="center">Approve Refund</h2>
+<h2 align="center">Approve the Refund</h2>
 <a href="index.php">Back to Refunds</a>
 <br/><br/>
-		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
+		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund" enctype="multipart/form-data">
       <table style="width: 100%" border="1">
         <tbody>
 		<tr>
@@ -2491,6 +2888,28 @@ EDITUSERPAGE;
             <td><input name="enc_nbr" type="text" readonly value="{$row['NG_enc_id']}">
             </td>
           </tr>
+EDITUSERPAGE;
+
+	
+		if(sizeof($arrayOFEncounters)>0){
+		
+		foreach($arrayOFEncounters as $key => $value){
+			
+				print <<<EDITUSERPAGE
+					<tr>
+						<td>Additional Encounter Number: </td>
+						<td><input name="duplicate_enc_nbr" type="text" readonly value="{$value}">
+						</td>
+					</tr>	
+EDITUSERPAGE;
+				
+			}
+	}
+
+
+		  
+print <<<EDITUSERPAGE
+		  
           <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
@@ -2507,6 +2926,9 @@ EDITUSERPAGE;
           </tr>
 
 EDITUSERPAGE;
+
+		//uploadCheck();
+
 
 		if($rowquery_dept_id['dept_id']==4){
 	
@@ -2526,6 +2948,7 @@ EDITUSERPAGE;
             <td>Check Number</td>
             <td><input name="check_nbr" type="text" size=25 readonly  value="{$row['check_nbr']}"></td>
           </tr>
+		  
 
 EDITUSERPAGE;
 		}elseif($rowquery_dept_id['dept_id']==2){
@@ -2547,6 +2970,13 @@ EDITUSERPAGE;
             <td>Check Number</td>
             <td><input name="check_nbr" type="text" size=25 value=""></td>
           </tr>
+		  
+		  <tr>
+          	<td>Attach Check</td>
+          	<td><input type="file" name="check" ></td>
+          </tr>
+		  
+		  
 EDITUSERPAGE;
 			
 		}else{		  
@@ -3491,8 +3921,8 @@ function showReportsPage($username='', $accessLvl = '', $errors = ''){
 	print '<center><a href='."refunds.php".'?report_id=0>All Refunds</a></center>';
 	print '<br>';
 
-	print '<center><a href='."refunds.php".'?report_id=10>BILLING INITIAL APPROVAL</a></center>'; //previously was PAR 2 APPROVED
-	print '<center><a href='."refunds.php".'?report_id=4>ACCOUNTING APPROVAL</a></center>'; //previously was PAR 2 APPROVED
+	print '<center><a href='."refunds.php".'?report_id=10>PENDING BILLING APPROVAL</a></center>'; //previously was PAR 2 APPROVED
+	print '<center><a href='."refunds.php".'?report_id=4>PENDING ACCOUNTING APPROVAL</a></center>'; //previously was PAR 2 APPROVED
 	print '<center><a href='."refunds.php".'?report_id=3>ACCOUNTING APPROVED</a></center>';
 	/* print '<center><a href='."refunds.php".'?report_id=5>PAR 1 APPROVED</a></center>'; */
 	echo '<br>';
@@ -3504,7 +3934,7 @@ function showReportsPage($username='', $accessLvl = '', $errors = ''){
 	echo '<br>';
 	print '<center><a href='."refunds.php".'?report_id=8>STATUS CHANGES </a></center>';
 
-	print '<center><a href='."refunds.php".'?report_id=9>MULTIPLE ENCOUNTERS </a></center>';
+	//print '<center><a href='."refunds.php".'?report_id=9>MULTIPLE ENCOUNTERS </a></center>';
 		  
 	//reportAccountingApproved();
 	showFooter();
@@ -4933,7 +5363,7 @@ function reportBillingInitial(){
 	
 	///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	print '<br><br>';
-	print '<center>Displaying: <b>ACCOUNTING Approval</b></center>';
+	print '<center>Displaying: <b>Pending Accounting Approval</b></center>';
 	print '<br /><br /><div align = "center">';
 	print '<table border="1" cellpadding = "3">
 	<tr>
@@ -5101,7 +5531,7 @@ function reportInitialApprovalBilling(){
 	
 	///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	print '<br><br>';
-	print '<center>Displaying: <b>Billing Initial Approval</b></center>';
+	print '<center>Displaying: <b>Pending Billing Approval</b></center>';
 	print '<br /><br /><div align = "center">';
 	print '<table border="1" cellpadding = "3">
 	<tr>
