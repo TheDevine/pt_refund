@@ -809,6 +809,152 @@ function mail_presets($to,$status){
 		
 }
 
+
+function presetsPAR1(){
+	
+		//echo 'presets here';
+		
+		
+				
+			if($_POST['urgent']=='y'){ 
+			
+					$from = "Patient Refund <noreply@chcb.org>";
+					$subject = "Approved Patient Refund Request";
+					$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved by accounting.<br>
+					This refund has been marked as URGENT.  <br> Please login to the Patient Refund web application to review.";
+					$body .="<br>Status: ".$status;
+
+					$host = "ssl://smtpout.secureserver.net";
+					$port = "465";
+
+					$username = "jonathan@jonathanbowley.com";
+					$password = "paw52beh";
+
+
+					echo '<br>';
+
+					echo $from;
+					echo '<br>';
+
+					//echo $to;
+					//echo '<br>';
+
+					echo $subject;
+					echo '<br>';
+
+					echo $body;
+					echo '<br>';
+
+
+					emailPAR1($from, $to, $subject,$body,$host,$port);
+					mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org) as well
+
+
+			
+			}else{
+				
+				$from = "Patient Refund <noreply@chcb.org>";
+				$subject = "Approved Patient Refund Request";
+				$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved by accounting. Please login to the Patient Refund web application to review.";
+				$body .="<br>Status: ".$status;
+
+				$host = "ssl://smtpout.secureserver.net";
+				$port = "465";
+
+				$username = "jonathan@jonathanbowley.com";
+				$password = "paw52beh";
+
+
+				echo '<br>';
+
+				echo $from;
+				echo '<br>';
+
+				//echo $to;
+				//echo '<br>';
+
+				echo $subject;
+				echo '<br>';
+
+				echo $body;
+				echo '<br>';
+
+
+				emailPAR1($from, $to, $subject,$body,$host,$port);
+
+			}
+	
+	
+
+}
+
+
+function emailPAR1($from, $to, $subject,$body,$host,$port){
+	
+		include 'connectToDB.php'; 
+
+		$query="SELECT username FROM users WHERE dept_id='3'"; //all PAR1 users
+		$result = mysqli_query($db,$query);
+		
+		echo $query;
+		echo '<br>';
+		var_dump($result);
+		
+		while ($rowPAR1_Users=mysqli_fetch_array($result)){//build up the assigned to username
+		
+			$email=$rowPAR1_Users['username'].'@chcb.org';
+			
+		
+			echo 'the Email address is: ';
+			echo $email;
+			echo '<br>';
+			
+			
+			/*
+			$headers = array ('From' => $from,'To' => $to,'Subject' => $subject);
+			$smtp = Mail::factory('smtp',
+			array ('host' => $host,
+			'port' => $port,
+			'auth' => true,
+			'username' => $username,
+			'password' => $password));
+
+			//uncomment below to actually mail
+			$mail = $smtp->send($to, $headers, $body);
+
+
+			if (PEAR::isError($mail)) {
+			echo("<p>" . $mail->getMessage() . "</p>");
+			} 		
+
+			*/
+	
+		}
+				
+		/*
+
+		$headers = array ('From' => $from,'To' => $to,'Subject' => $subject);
+		$smtp = Mail::factory('smtp',
+		array ('host' => $host,
+			'port' => $port,
+			'auth' => true,
+			'username' => $username,
+			'password' => $password));
+
+		//uncomment below to actually mail
+		$mail = $smtp->send($to, $headers, $body);
+		
+		
+		if (PEAR::isError($mail)) {
+		 echo("<p>" . $mail->getMessage() . "</p>");
+		} 			
+
+		*/		
+		
+}
+
+
+
 function sendOutEmail($from, $to, $subject,$body,$host,$port){
 
 		$headers = array ('From' => $from,'To' => $to,'Subject' => $subject);
@@ -1959,16 +2105,6 @@ function executeTheApprove(){
 				
 				//include 'dump_all_page_contents.php';
 				
-				
-						/*
-									<td>Check Date</td>
-					<td><input name="check_date" type="text" size=25  value="{$row['check_date']}"></td>
-				  </tr>
-				  <tr>
-					<td>Check Number</td>
-					<td><input name="check_nbr" type="text" size=25  value="{$row['check_nbr']}"></td>
-					
-					*/
 						
 						$pieces_from = explode("/", $_POST['check_date']);
 						$converted_date_from=date("Y-m-d", mktime(0, 0, 0, $pieces_from[0], $pieces_from[1], $pieces_from[2]));
@@ -2004,97 +2140,13 @@ function executeTheApprove(){
 						//TRACK THE CHANGES		
 					
 
-				if (mysqli_error($result)){
-					print mysqli_error($result);
-				}
+						if (mysqli_error($result)){
+							print mysqli_error($result);
+						}
 				
-					///////////////////////BEGIN EMAIL NOTIFICATION/////////////////////////////////////////////////////////////////////////////
-					$query = "SELECT username FROM users WHERE user_id='{$_SESSION['userid']}'";
-					$result = mysqli_query($db,$query);
-					$rowUserNames=mysqli_fetch_array($result);
-					
-					//Functionality: creator gets emailed upon REJECTION
-					//dynamically build the to address from the username selected based on the recipients specified by the step in the process
-					$to=$rowUserNames['username'].'@chcb.org'; //build the creator email
-					
-					//IF THE REFUND WAS MARKED URGENT: email Erika as well
-					if($_POST['urgent']=='y'){ //verify that this works as intended
-
-						$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br> 
-						<br> This refund is marked as URGENT.";
-						$from = "Patient Refund <noreply@chcb.org>";
-						$subject = "Updated Patient Refund Request";
-						$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
-						$body .="<br>Status: ".$status;
-							
-							
-						echo 'the from field is <br>';
-						echo $from;
-						echo '<br>';
-						
-						echo 'the to field is <br>';
-						echo $to;
-						echo '<br>';
-						
-															
-						echo 'the status is <br>';
-						echo $status;
-						echo '<br>';
-						
-
-						echo 'the subject is <br>';
-						echo $subject;
-						echo '<br>';
-						
-						echo 'the body of the email is something to the effect of: <br>';
-						echo $body;
-						
-						echo '<br>';
-						mail_presets($to,$status); //notify creator
-						mail_presets("ebrown@chcb.org",$status); //notify erika (ebrown@chcb.org)
-						
-					}else{
-						
-
-						$status="A Refund for ".$_POST['payable']." with a Refund ID ".$_POST['refund_id']." for the amount of $".$_POST['amount'] ." has been approved. <br>";
-					
-						$from = "Patient Refund <noreply@chcb.org>";
-						$subject = "Updated Patient Refund Request";
-						$body = "Hello,\n\n patient refund request # {$_POST['refund_id']} has been approved. Please login to the Patient Refund web application to review.";
-						$body .="<br>Status: ".$status;
-							
-							
-						echo 'the from field is <br>';
-						echo $from;
-						echo '<br>';
-						
-						echo 'the to field is <br>';
-						echo $to;
-						echo '<br>';
-						
-															
-						echo 'the status is <br>';
-						echo $status;
-						echo '<br>';
-						
-						
-						
-						echo 'the subject is <br>';
-						echo $subject;
-						echo '<br>';
-						
-
-						echo 'the body of the email is something to the effect of: <br>';
-						echo $body;
-						
-						echo '<br>';
-
-						mail_presets($to,$status);//notify creator
-						
-					}
-
-
-				///////////////END EMAIL NOTIFICATIONS
+						///////////////////////BEGIN EMAIL NOTIFICATION///
+						presetsPAR1();
+						///////////////END EMAIL NOTIFICATIONS
 
 				
 				
@@ -4829,6 +4881,10 @@ if( isset($_POST['generateReport']) && sizeof($_POST['generateReport']) > 0){
 if (isset($_POST['datepickerSTART']) && strlen($_POST['datepickerSTART']) > 1 && isset($_POST['datepickerEND'])){
 
 		include 'pagination_functionality.php';
+		
+		instantiate_initialOffset();
+		
+		
 
 		$pieces_from = explode("/", $_POST['datepickerSTART']);
 		$converted_date_from=date("Y-m-d", mktime(0, 0, 0, $pieces_from[0], $pieces_from[1], $pieces_from[2]));
@@ -4967,6 +5023,22 @@ if (isset($_POST['datepickerSTART']) && strlen($_POST['datepickerSTART']) > 1 &&
 
 }
 
+//FULL RESULT SET
+	$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status='COMPLETED'";
+			
+			
+	$resultFull = mysqli_query($db,$queryFullResultSet); 
+	$rowEntire = @mysqli_fetch_array($resultFull);
+	$numResultENTIRERows=$resultFull->num_rows;
+	//END FULL RESULT SET
+
+
+
 
 $arrayRefundUsers=array();
 
@@ -5017,8 +5089,11 @@ $result = mysqli_query($db,$query);
 
 //echo sizeof($row);
 
+$result_display_ctr=0;
+
 while ($row = mysqli_fetch_array($result)){
 	
+	$currentRowSize=sizeof($row);
 
 	$today_dt=$entered_dt=$interval=$refund_requested_by=$date_requested=$refund_assigned_to=$interval="";
 	calculateInterval($row,$refund_requested_by,$date_requested,$today_dt,$entered_dt,$interval,$refund_assigned_to);
@@ -5034,6 +5109,10 @@ while ($row = mysqli_fetch_array($result)){
 	}
 	
 	
+	
+	if($result_display_ctr<$_SESSION['RowsPerPage']){
+
+	$result_display_ctr++;
 	
 	if($interval->days>30 && $row['status']!="COMPLETED"){
 		print '<tr bgcolor=#FF0000>';
@@ -5061,7 +5140,9 @@ while ($row = mysqli_fetch_array($result)){
 	print '<td>'.$refund_assigned_to.'</td>';
 
 	print	'</td></tr>';
-
+	
+	}
+	instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
 }	
 
 print '</table></div>';
@@ -5073,15 +5154,26 @@ EDITUSERPAGE;
 */
 
 //print '<h3 align="center"><a href="addrefund.php">Create a New Refund Request</a></h3>';
+	if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
+
+	//displayPagination($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+	displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+	}
+	
+	echo '<center>';
+			 echo 'TOTAL Results: '.$numResultENTIRERows.' Records ';
+			 echo '<h2>'.ceil($numResultENTIRERows/$_SESSION['RowsPerPage']).' Page(s) </h2>';
+		echo '</center>';
+	
+		showFooter();
+	
+}
+	
+}	
 
 	
-}
 	
-	
-	showFooter();
-	
-	
-}
+
 
 function reportNew(){
 	
