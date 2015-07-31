@@ -353,7 +353,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	//show list of refunds pending approval if user is administrator
 
 
-	
+	print '<br><br>';
     print '<h2 align="center">Welcome '.$_SESSION['loginName'] .'! </h2>';
 
 	
@@ -463,10 +463,13 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 	}
 	
-	
-	echo 'the query is <br>';
-	echo $query;
-	echo '<br>';
+	//index debug query
+	/*
+		echo 'the query is from functions.php called from index page <br>';
+		echo $query;
+		echo '<br>';
+	*/
+	//index debug query
 	
 	$result = mysqli_query($db,$query); 
 	$row = @mysqli_fetch_array($result);
@@ -495,12 +498,15 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 
 	//include 'dump_all_page_contents.php';
 	
-	echo $_SESSION['just_reordered'];
-	echo '<br>';
+	//echo 'comes from functions.php page ~ line 500';
+	//echo $_SESSION['just_reordered'];
+	//echo '<br>';
+	
 	
 	
 	if($_SESSION['just_reordered']==1){
-		$pageNumRedirect="&page_number=1";
+		//$pageNumRedirect="&page_number=1";
+		$pageNumRedirect="&page_number=0";
 		$_SESSION['just_reordered']=0;
 	}
 

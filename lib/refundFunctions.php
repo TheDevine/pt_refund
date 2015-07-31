@@ -383,7 +383,9 @@ function validateRefundChanges(){
 	$current_date=date("Y-m-d H:i:s");  
 	
 	//was dt_required previously
-	if (strlen($_POST['dt_request'])<8 || !is_numeric($_POST['dt_request']) ){
+	
+	//if (strlen($_POST['dt_request'])<8 || !is_numeric($_POST['dt_request']) ){
+	if (strlen($_POST['dt_request'])<8){
 		$errors[]='Please Enter a Valid Date <br> 
 		numeric only-no spaces, dashes or slashes.'; //add better date validation logic	
 	}else{
@@ -404,7 +406,7 @@ function validateRefundChanges(){
 			$errors[]='Please Enter a Valid Date <br> 
 			numeric only-no spaces, dashes or slashes. (cannot be a future date)'; //add better date validation logic	
 		}else{
-			echo 'The date entered is valid';
+			//echo 'The date entered is valid';
 
 		}
 		//$converted_date=date("Y-m-d H:i:s", $_POST['dt_required']);
@@ -909,47 +911,9 @@ function emailPAR1($from, $to, $subject,$body,$host,$port){
 			echo $email;
 			echo '<br>';
 			
+			//sendOutEmail($from, $email, $subject,$body,$host,$port);
 			
-			/*
-			$headers = array ('From' => $from,'To' => $to,'Subject' => $subject);
-			$smtp = Mail::factory('smtp',
-			array ('host' => $host,
-			'port' => $port,
-			'auth' => true,
-			'username' => $username,
-			'password' => $password));
-
-			//uncomment below to actually mail
-			$mail = $smtp->send($to, $headers, $body);
-
-
-			if (PEAR::isError($mail)) {
-			echo("<p>" . $mail->getMessage() . "</p>");
-			} 		
-
-			*/
-	
 		}
-				
-		/*
-
-		$headers = array ('From' => $from,'To' => $to,'Subject' => $subject);
-		$smtp = Mail::factory('smtp',
-		array ('host' => $host,
-			'port' => $port,
-			'auth' => true,
-			'username' => $username,
-			'password' => $password));
-
-		//uncomment below to actually mail
-		$mail = $smtp->send($to, $headers, $body);
-		
-		
-		if (PEAR::isError($mail)) {
-		 echo("<p>" . $mail->getMessage() . "</p>");
-		} 			
-
-		*/		
 		
 }
 
@@ -1000,8 +964,8 @@ function displayRefundUploads($refund_id){
 			while (($file = readdir($dh)) !== false) {
 				if(strlen($file)>2){ //dont show hidden default files
 					$full_path=$target_dir.$file;
-					echo '<i><b>Document '.$doc_ctr.':  </b></i>';
-					echo "<i><b><a href='{$full_path}'>$file</a></b></i><br><br>";
+					echo "<input type=checkbox value='{$full_path}' name='remove[]'>  <i><b>Document ".$doc_ctr.":  </b></i>";
+					echo " <i><b><a href='{$full_path}'>$file</a></b></i> <br><br>";
 					//echo "Filename: $file : filetype: " . filetype($target_dir . $file) . "\n";
 					$doc_ctr++;
 				}
@@ -1017,6 +981,7 @@ function displayRefundUploads($refund_id){
 			echo "<h3>No Documents Attached</h3>";
 	}
 
+	return $doc_ctr; //return the number of documents attached for the conditional display of the Remove Documents button
 }
 
 
@@ -1074,6 +1039,85 @@ EDITUSERPAGE;
 		
 
 	}else{
+		
+		?>
+		
+		<script>
+		$(function() {
+		$( "#datepickerSTART" ).datepicker();
+		});
+		
+		$(function() {
+		$( "#datepickerEND" ).datepicker();
+		});
+		
+		$(document).ready(function() {
+		//var max_fields      = 10; //maximum input boxes allowed
+		var wrapper_additional         = $(".upload_additional_documents_wrap"); //Fields wrapper
+		var add_button_additional      = $(".add_extra_attachments"); //Add button ID
+		
+		var add_button_additional_accounting_comments      = $(".add_extra_accounting_comments");
+
+
+		var x = 1; //initial attachment box count
+		var y=1; //initial attachment accounting comment count
+		
+		
+		$(add_button_additional).click(function(e){ //on add input button click
+		e.preventDefault();
+		//if(x < max_fields){ //max input box allowed
+			x++; //text box increment
+			$(wrapper_additional).append('<tr id='+x+'><td>Additional Attachment: </td><td><input type="file" name="newFile[]"/><a href="#" class="remove_field" id='+x+'>Remove</a></td></tr>'); //add input box
+		//}
+		});
+		
+		$(add_button_additional_accounting_comments).click(function(e){ //on add input button click
+		e.preventDefault();
+		//if(x < max_fields){ //max input box allowed
+			y++; //text box increment
+			$(wrapper_additional).append('<tr id='+x+'><td>Additional Accounting Comments: </td><td><input type="textarea" rows="10" name="add_comments_accounting[]"/><a href="#" class="remove_it" id='+x+'>Remove</a></td></tr>'); //add input box
+		//}
+		});
+
+		$(wrapper_additional).on("click",".remove_it", function(e){ //user click on remove text
+
+			var r = confirm("Are you Sure you would like to remove this addtional accounting comment box? ");
+			if (r == true) {
+				//x = "Documents Will be removed!";	
+				e.preventDefault(); $(this).parents('tr').remove(); x--;
+				//alert('Documents Will be removed!');
+				
+			} else {
+				//x = "Cancelling Document Removal!";
+				//alert('Cancelling Document Removal!');
+			} 
+		
+		})
+
+	
+		$(wrapper_additional).on("click",".remove_field", function(e){ //user click on remove text
+
+			var r = confirm("Are you Sure you would like to remove the checked documents from the Refund? ");
+			if (r == true) {
+				//x = "Documents Will be removed!";	
+				e.preventDefault(); $(this).parents('tr').remove(); x--;
+				
+			} else {
+
+			} 
+		
+		
+		})
+				
+
+		});
+
+		
+		
+		</script>
+		
+		
+		<?php
 		
 
 	include 'pagination_functionality.php';	
@@ -1193,6 +1237,8 @@ EDITUSERPAGE;
 	
 	if($row['created_by']==$_SESSION['userid']){ 
 	
+	$display_date=substr($row['dt_request'],0,10);
+	
 
 	print <<<EDITUSERPAGE
 <h2 align="center">Edit REFUND</h2>
@@ -1208,7 +1254,7 @@ EDITUSERPAGE;
           <tr>
             <td>Date</td>
 
-            <td><input name="dt_request" type="text" id="datepickerSTART" value ="{$row['dt_request']}"> 
+            <td><input name="dt_request" readonly type="text" id="datepickerSTART" value ="{$display_date}"> 
 			<font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
@@ -1275,11 +1321,41 @@ EDITUSERPAGE;
             <td><input name="purpose" type="text" value="{$row['purpose']}">
             </td>
           </tr>
+		  
+EDITUSERPAGE;
+		  
+		 	
+	if($rowquery_dept_id['dept_id']==2){
+
+	print <<<EDITUSERPAGE
+	
           <tr>
             <td>Comments</td>
             <td><input name="comments" type="text" value="{$row['comments']}">
             </td>
           </tr>
+
+EDITUSERPAGE;
+		  
+	}else{
+
+
+	print <<<EDITUSERPAGE
+	
+          <tr>
+            <td>Comments</td>
+            <td><input name="comments" type="text" readonly value="{$row['comments']}">
+            </td>
+          </tr>
+
+EDITUSERPAGE;
+		
+		
+		
+	}	  
+	
+	print <<<EDITUSERPAGE
+	
 		   <tr>
             <td>Current Status</td>
             <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
@@ -1330,12 +1406,9 @@ EDITUSERPAGE;
 	}else{
 		
 		//include 'dump_all_page_contents.php';
-	
-		
 		$_SESSION['return_URI']=$_SERVER['REQUEST_URI'];
-		
-		
-		
+		$display_date=substr($row['dt_request'],0,10);
+
 		//GENERATE A LIST OF ALL THE ENCOUNTERS IF THERE ARE MULTIPLE///////////////////////////////////////////////////////////////			
 		
 		if(isset($_GET['refund_id'])){
@@ -1383,8 +1456,10 @@ EDITUSERPAGE;
 <h2 align="center">EDIT Refund</h2>
 <a href="index.php">Back to Refunds</a>
 <br/><br/>
-		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund">
-      <table style="width: 100%" border="1">
+		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="update_refund" enctype="multipart/form-data">
+      <table style="width: 100%" border="1" class="upload_additional_documents_wrap">
+	  
+	  
         <tbody>
 		
 		
@@ -1396,7 +1471,7 @@ EDITUSERPAGE;
           <tr>
             <td>Date Requested</td>
 
-            <td><input name="dt_request" type="text" readonly value ="{$row['dt_request']}"> <font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
+            <td><input name="dt_request" type="text" readonly value ="{$display_date}"> <font color=red>* Required Format: MMDDYYY (numeric only-no spaces, dashes or slashes.) </font><br>
             </td>
           </tr>
           <tr>
@@ -1460,23 +1535,72 @@ EDITUSERPAGE;
 	}
 
 
-		
-
 	print <<<EDITUSERPAGE
       <tr>
             <td>Purpose</td>
             <td><input name="purpose" type="text" readonly value="{$row['purpose']}">
             </td>
           </tr>
+		  
+		  
+EDITUSERPAGE;
+		  
+	
+		
+	if($rowquery_dept_id['dept_id']==2){
+		
+
+	print <<<EDITUSERPAGE
+	
           <tr>
             <td>Comments</td>
-            <td><input name="comments" type="text"  value="{$row['comments']}">
+            <td><input name="comments" type="text" readonly  value="{$row['comments']}">
             </td>
           </tr>
+		  
+EDITUSERPAGE;
+
+		
+	}else{
+	
+	print <<<EDITUSERPAGE
+	
+          <tr>
+            <td>Comments</td>
+            <td><input name="comments" type="text" readonly value="{$row['comments']}">
+            </td>
+          </tr>
+		  
+EDITUSERPAGE;
+		  	
+	}
+	
+	print <<<EDITUSERPAGE
+
 		   <tr>
             <td>Current Status</td>
             <td><input name="status" type="text" size=25 readonly value="{$row['status']}"></td>
           </tr>
+EDITUSERPAGE;
+		if($rowquery_dept_id['dept_id']==2){
+			
+		print <<<EDITUSERPAGE
+	
+		  <tr>
+          	<td>Attach New Files</td>
+          	<td><input type="file" name="newFile[]" value="" ></td>
+          </tr>
+		  
+		   <tr>
+            <td>Add Additional Accounting Comments</td>
+            <td><input name="add_comments_accounting[]" type="textarea" rows="10"  value="">
+            </td>
+          </tr> 
+		  
+EDITUSERPAGE;
+		  
+		}
+	print <<<EDITUSERPAGE
 
 		  </tbody>
       </table>
@@ -1484,21 +1608,51 @@ EDITUSERPAGE;
       <input type="hidden" name="refund_id" value = "{$_GET['refund_id']}">
 	  <br/>
 	  
-	  
-		  
-	  
-    
 EDITUSERPAGE;
 
+	$num_docs_attached=0;
+	$num_docs_attached=displayRefundUploads($row['refund_id']);
+	
+	if($num_docs_attached>0){//conditional display of Remove Documents Button
+		
+	print <<<EDITUSERPAGE
+	
+     <button formmethod="post" formaction="refunds.php" value="{$_GET['refund_id']}" name="_remove_docs_submit">Remove Checked Documents</button>
+		  
+EDITUSERPAGE;
+		
 
-	displayRefundUploads($row['refund_id']);
+		echo '<br>';
+	}
+	
+	?>
+	
+<br>
 
-	  if ($_SESSION['userid']==$row['created_by']){ //only allow them to modify the refund if they created it
+	
+<?php
+
+
+	  if ($rowquery_dept_id['dept_id']==2){ //only allow them to modify these fields if they are accounting
+	  
+	  	 	print <<<EDITUSERPAGE
+      <button class="add_extra_attachments">Add Additional attachments associated with this Refund</button>
+EDITUSERPAGE;
+	  
+	 	print <<<EDITUSERPAGE
+      <button class="add_extra_accounting_comments">Add Additional Comment Boxes</button>
+EDITUSERPAGE;
 	  
 	print <<<EDITUSERPAGE
-      <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_edit_submit">Update Refund</button>
+      <button formmethod="post" formaction="refunds.php" value="{$_GET['refund_id']}" name="_edit_submit">UPDATE Refund</button>
 EDITUSERPAGE;
 	 
+	 }elseif($_SESSION['user_id']==$row['created_by']){
+		 
+			print <<<EDITUSERPAGE
+      <button formmethod="post" formaction="refunds.php" value="{$_GET['refund_id']}" name="_edit_submit">UPDATE Refund</button>
+EDITUSERPAGE;
+ 		 
 	 }
 
 	
@@ -1528,10 +1682,15 @@ EDITUSERPAGE;
 
 }			
 	
+	if($row['status']!='COMPLETED'){
+	
 	print <<<EDITUSERPAGE
 	  <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="{$_GET['refund_id']}" name="_app_submit">Approve Refund</button>
 EDITUSERPAGE;
 	 }
+	
+	
+	}
 	 
  }
 	 	print <<<EDITUSERPAGE
@@ -2799,10 +2958,10 @@ print <<<EDITUSERPAGE
       <input type="hidden" name="refund_id" value = "{$row['refund_id']}">
 EDITUSERPAGE;
 
+
 		$query_dept_id="SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
 		$result_dept_id = mysqli_query($db,$query_dept_id);
 		$rowquery_dept_id=mysqli_fetch_array($result_dept_id);
-
 		
 		//uploadCheck();
 		
@@ -6778,7 +6937,7 @@ EDITUSERPAGE;
 		
 }
 
-function trackRefundChanges($status_before,$status_after,$comments){
+function trackRefundChanges($status_before,$status_after,$comments=''){
 	include 'connectToDB.php'; 
 	
 	$now = date("Y-m-d H:i:s");	

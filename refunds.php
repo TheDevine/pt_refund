@@ -394,9 +394,68 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				
 		} //end isset($_POST['_assign_submit'])
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+		elseif(isset($_POST['_remove_docs_submit']) && $_POST['_remove_docs_submit']!="" && $_POST['_remove_docs_submit']!=NULL){ 
+		
+			foreach($_REQUEST['remove'] as $key => $value){
+				
 
+				if (unlink($value)){//show success message
+					echo '<h3 align="center"> File: '.$value.' Has been successfully removed from this refund.</h3>';
+				}else{
+					echo 'Error Removing File: '.$value;
+				}
+	
+				
+			}
+			
+				//Display Return Link
+				print '<h4 align="center"><a href="index.php">Return to Refunds Page</a></h4>';
+				echo '<br>';
+			
+				die();
+			
+		}
+	
 		//once user is authenticated, check to see if this form has been submitted
 		elseif(isset($_POST['_edit_submit']) && $_POST['_edit_submit']!="" && $_POST['_edit_submit']!=NULL){ 
+		
+		
+		//add_comments_accounting is treated like a status change--as it is technically an update, 
+		//so will insert extra comments in the refund_changes table	
+
+		//if they were completed and are entering additional comments
+		if($_POST['status']=='COMPLETED'){
+			
+			$status_before='COMPLETED';
+			$status_after=$status_before;
+			foreach ($_POST['add_comments_accounting'] as $key => $value){
+				
+				trackRefundChanges($status_before,$status_after,$value);		
+			}
+			
+		}
+		///end if they were completed and are entering additional comments
+				
+		//include 'dump_all_page_contents.php';
+		//die();
+		
+		
+		//END add_comments_accounting
+
+		$upload_success= uploadFilesTHIS();
+		
+		if( $upload_success && strlen($_FILES['newFile']["name"][0])>0 )
+			echo 'Upload additional attachments successfully!! <br>';
+		elseif(strlen($_FILES['newFile']["name"][0])>0)
+			echo 'Uploading additional documents has failed. <br>';
+
+		$ctr_refund_attachments=0;
+
+		//uploadFiles($_POST['refund_id']);
+		
+		//die();
 	
 		//Edit user form has been submitted so it's time to update the database
 
@@ -406,14 +465,13 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 			if(validateRefundChanges()=='valid'){ //if no errors, update user in db and show success message
 			
 			
-				echo 'passed validateRefundChanges() within refunds.php line 268 <br>';
+				//echo 'passed validateRefundChanges() within refunds.php line 268 <br>';
 
 				//check for errors
-				echo 'if no errors, update user in db and show success messages <BR>';
+				//echo 'if no errors, update user in db and show success messages <BR>';
 				//update user in db
 				$now = date("Y-m-d H:i:s");				
-				$query = "UPDATE refund SET NG_enc_id = '{$_POST['enc_nbr']}', dt_required = '{$_POST['dt_required']}', 
-				amount = '{$_POST['amount']}', payable='{$_POST['payable']}', addr_ln_1 ='{$_POST['addr_ln_1']}', 
+				$query = "UPDATE refund SET NG_enc_id = '{$_POST['enc_nbr']}', amount = '{$_POST['amount']}', payable='{$_POST['payable']}', addr_ln_1 ='{$_POST['addr_ln_1']}', 
 				addr_ln_2='{$_POST['addr_ln_2']}', city ='{$_POST['city']}', state='{$_POST['state']}', zip='{$_POST['zip']}', 
 				purpose='{$_POST['purpose']}', modfied_by={$_SESSION['userid']}, modified_dt='{$now}',
 				comments ='{$_POST['comments']}' WHERE refund_id = {$_POST['refund_id']} ";
@@ -425,8 +483,8 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				}
 				
 				
-				echo 'the QQuery is <br>';
-				echo $query;
+				//echo 'the QQuery is <br>';
+				//echo $query;
 				
 				///GET DEPT NAME//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 					//get the name of the department, so we can select the recipients of that department from email_recipients
@@ -461,20 +519,16 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 				mail_presets($to,$status);
-				
 	
-				
 				/*
 				//SEND OFF EMAIL HERE
-				
 				//send notification that a new refund has been created
 				//commented out for the time being 
-				
 				*/
 				
 				//show success message
 				print '<h3 align="center"> Refund for  '.$_POST['payable'].' updated!</h3>';
-				print '<h4 align="center"><a href="refunds.php">Return to Refunds Page</a></h4>';
+				print '<h4 align="center"><a href="index.php">Return to Refunds Page</a></h4>';
 				echo '<br>';
 				
 				//echo "I'm now about to refresh the page <br>";
@@ -1015,6 +1069,87 @@ elseif($_POST['username']) { //this means user_id isnt defined in the session va
 	//echo 'came down here <br>';
 }
 	
+	
+function uploadFilesTHIS(){
+	
+	/*
+		DEBUG
+		var_dump($_FILES);
+		echo 'called upload';
+		echo '<br>';
+		DEBUG
+	*/
+	
+	$refundID_just_created=$_POST['refund_id'];
+	
+	$target_dir = "uploads/".$refundID_just_created."/";
 
+	$target_file="";
+	$ctr_refund_attachments=0;
+	$uploadOk = 1;
+	//if the folder exists already means a previous refund created it, and at this pt accounting is only adding files to completed refunds
+
+		if(strlen($_FILES['newFile']["name"][0])>0){ //if they attached at least one file
+		
+		foreach($_FILES['newFile'] as $value){
+			
+			if($ctr_refund_attachments==0){ //only execute the first iteration
+	
+				foreach($value as $key => $value_two){
+						
+						$uploadOk = 1;
+						$target_file = $target_dir .$value_two;
+						
+						$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+		
+						// Check file size
+						if ($_FILES['newFile']["size"][$ctr_refund_attachments] > 500000) {
+							echo "Sorry, your file is too large. <br>";
+							$uploadOk = 0;
+						}
+						
+						// Allow certain file formats
+						if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+						&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
+						&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
+			
+							echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
+							$uploadOk = 0;
+						}
+						
+						if ($uploadOk == 0) {
+							echo "Sorry, your file was not uploaded.";
+							// if everything is ok, try to upload file
+						} else {
+					
+								if (move_uploaded_file($_FILES['newFile']["tmp_name"][$ctr_refund_attachments], $target_file)) {
+									//echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
+									echo "The file ". $value_two. " has been successfully uploaded. to the <br>".$target_file." Directory.";
+									
+								} else {
+									echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
+									 print_r( error_get_last() );
+								}
+							
+									$ctr_refund_attachments++;
+							}
+								
+					}
+			
+			}
+			//first time through value contains full array of uploads
+
+		}
+		
+	}
+
+	if($uploadOk==1){
+		return 1;
+	}else{
+		return 0;
+	}
+		
+}
+	
 
 ?>

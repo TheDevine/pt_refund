@@ -33,8 +33,8 @@ if(isset($_GET)){
 		
 		$_SESSION['just_reordered']=1;
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
 	}
 	
 	
@@ -47,16 +47,19 @@ if(isset($_GET)){
 		}
 		
 		if ($_SESSION['order_ct_num']%2==0)
-			$_SESSION['order']=" NG_enc_id DESC";
+			//$_SESSION['order']=" NG_enc_id DESC";
+			$_SESSION['order']=" ABS(NG_enc_id) DESC";
+			//ABS(mycol)
 		else
-			$_SESSION['order']=" NG_enc_id ASC";
+			$_SESSION['order']=" ABS(NG_enc_id) ASC";
 		
 		
 		$_SESSION['just_reordered']=1;
 
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
+
 	}
 	
 	
@@ -77,8 +80,8 @@ if(isset($_GET)){
 		$_SESSION['just_reordered']=1;
 
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
 	}
 	
 		
@@ -99,8 +102,8 @@ if(isset($_GET)){
 
 		$_SESSION['just_reordered']=1;
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
 	}
 	
 	if(isset($_GET['requested_by']) && $_GET['requested_by']=='y'){
@@ -119,8 +122,8 @@ if(isset($_GET)){
 
 		$_SESSION['just_reordered']=1;
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
 	}
 	
 	if(isset($_GET['amount_order']) && $_GET['amount_order']=='y'){
@@ -139,8 +142,8 @@ if(isset($_GET)){
 
 		$_SESSION['just_reordered']=1;
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
 	}
 	
 		
@@ -159,8 +162,8 @@ if(isset($_GET)){
 
 		$_SESSION['just_reordered']=1;
 		
-		echo 'session order is: <br>';
-		echo $_SESSION['order'].'<br><br>';
+		//echo 'session order is: <br>';
+		//echo $_SESSION['order'].'<br><br>';
 	}
 	
 	//below actually stores the place from which the initial landing page of refunds is displayed to user, directly after logging in for the first time.
@@ -173,17 +176,17 @@ if(isset($_GET)){
 
 if(!isset($_GET['report_id']) && !isset($_POST['report_id'])){
 	
-	ECHO 'IN FIRST ';
+	//ECHO 'IN FIRST '; //this is still set even when logged out
 	//die();
 
 	if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for access level 
 
-		ECHO 'IN 2 ';
+		//ECHO 'IN 2 ';
 		//die();
 
 	if($_SESSION['access']=='S' OR $_SESSION['access']=='A' OR $_SESSION['access']=='U'){
 		
-			ECHO 'IN 3 ';
+			//ECHO 'IN 3 ';
 			//die();
 
 		//check for $_GET['refund_id']. If set, show edit page for that user. Otherwise, show list of users
@@ -191,12 +194,12 @@ if(!isset($_GET['report_id']) && !isset($_POST['report_id'])){
 		
 		if(sizeof($_POST)==0){
 			
-				ECHO 'IN 4 ';
+				//ECHO 'IN 4 ';
 				//die();
 
 			if (!isset($_GET['refund_id']) || ( ($_GET['refund_id']!="") && ($_GET['refund_id']!=NULL))){
 				
-				echo 'in 5';
+				//echo 'in 5';
 
 				if(isset($_GET['action']) && $_GET['action']=='edit'){
 					showEditPage();
@@ -211,7 +214,7 @@ if(!isset($_GET['report_id']) && !isset($_POST['report_id'])){
 				}elseif(isset($_GET['action']) && $_GET['action']=='assign'){
 					showAssignPage(); 
 				}else{
-					echo 'called from the else <br>';
+					//echo 'called from the else of index page <br>';
 					showPage($_SESSION['username'],$_SESSION['access']); 
 				}
 			}
