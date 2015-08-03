@@ -93,7 +93,38 @@ function instantiate_page_variablesReports($numResultENTIRERows,&$tempOrigStartP
 				//$URL_String_BACK=$theOrigURL;
 				
 				//$URL_String_BACK .="&page_number=".$page;
+				
+				//http://localhost/pt_refund/refunds.php?report_id=1
+				
+				/*
+				
+				 'QUERY_STRING' => string 'report_id=1&page_number=1' (length=25)
+				 'REQUEST_URI' => string '/pt_refund/refunds.php?report_id=1&page_number=1' (length=48)
+				
+				*/
+				/*
+				include 'dump_all_page_contents.php';
+				echo '<br>';
 
+				echo 'string back ';
+				echo '<br>';
+				echo $URL_String_BACK;
+				echo '<br> end string back ';
+				echo '<br>';
+				*/
+				//if($URL_String_BACK=="http://localhost/pt_refund/refunds.php?report_id=1"){
+					
+				if($_SERVER['QUERY_STRING']=='report_id=1&page_number=1'){
+					$URL_String_BACK.="&page_number=0";
+				}
+				
+				/*
+				echo 'string back ';
+				echo '<br>';
+				echo $URL_String_BACK;
+				echo '<br> end string back ';
+				echo '<br>';
+				*/
 		
 			}
 			echo '&nbsp;&nbsp;&nbsp;&nbsp;';	
@@ -107,12 +138,16 @@ function instantiate_page_variablesReports($numResultENTIRERows,&$tempOrigStartP
 				$URL_String_FORWARD=$_SERVER['REQUEST_URI'];
 				
 				
-				if($_SERVER['REQUEST_URI']=="/pt_refund/refunds.php?report_id=0"){
+				if($_SERVER['REQUEST_URI']=="/pt_refund/refunds.php?report_id=0" || $_SERVER['REQUEST_URI']=="/pt_refund/refunds.php?report_id=1"){
 						
 					$URL_String_FORWARD .="&page_number=".$page;
 				
 				}else{
-				
+					
+					//echo $_SERVER['REQUEST_URI'];
+					//die();
+					///pt_refund/refunds.php.?report_id=1
+					
 					$URL_String_FORWARD=substr($_SERVER['REQUEST_URI'],0,strlen($_SERVER['REQUEST_URI'])-1);
 					$URL_String_FORWARD .="".$page;
 				}

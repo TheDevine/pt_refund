@@ -686,7 +686,7 @@ function showHeaderSearchLanding($username='',$accessLvl=''){
 	
 	
 	?>
-	
+<!--	
 	<script>
 function clear_SAVE_POST() {
     $.post('reset_savePostArray.php', {}, function(response) {
@@ -705,6 +705,8 @@ function clear_SAVE_POST() {
 	
 		
 </script>
+
+!-->
 
 
 <?php
@@ -3985,6 +3987,10 @@ function showPage($username='', $accessLvl = '', $errors = ''){ //page where use
 
 	}
 	
+	
+	echo 'new query <br>';
+	echo $query ;
+	echo '<br>';
 
 
 	$result = mysqli_query($db,$query); 
@@ -4966,7 +4972,11 @@ EDITUSERPAGE;
 function reportCompleted(){
 	
 	//include 'dump_all_page_contents.php'; 
-	showHeaderALL($_SESSION['username'], $_SESSION['access']);
+		//if(sizeof($_POST)>0){
+
+			showHeaderALL($_SESSION['username'], $_SESSION['access']);
+	
+		//}
 	include 'connectToDB.php'; 
 	
 	?>
@@ -5002,8 +5012,11 @@ function reportCompleted(){
 		<p>Please enter a custom date range you would like to generate the report for, or leave blank to generate all Completed Refunds. </p>
 
 		<?php
+		
+			$action_url=$_SERVER['PHP_SELF']."?report_id=1";
+		
 			print <<<LOGINFORM
-			<form action="{$_SERVER['PHP_SELF']}.?report_id=1" method="post">
+			<form action="{$action_url}" method="post">
 			<table>
 				<tr><td>
 					<p>FROM Date: 
@@ -5038,6 +5051,29 @@ if( isset($_POST['generateReport']) && sizeof($_POST['generateReport']) > 0){
 
 
 if (isset($_POST['datepickerSTART']) && strlen($_POST['datepickerSTART']) > 1 && isset($_POST['datepickerEND'])){
+	
+/*
+$_SAVE_POST=array();
+$_SAVE_REQUEST=array();
+	
+$_SAVE_POST=$_POST;
+$_SAVE_REQUEST=$_REQUEST;
+*/
+
+$_SESSION['SAVE_POST']=array();
+$_SESSION['SAVE_REQUEST']=array();
+
+$_SESSION['SAVE_POST']=$_POST;
+$_SESSION['SAVE_REQUEST']=$_REQUEST;
+
+/*
+echo 'var dumps of request and post ';echo '<br>';
+var_dump($_SESSION['SAVE_POST']);
+echo '<br>';
+var_dump($_SESSION['SAVE_REQUEST']);
+*/
+
+	
 
 		include 'pagination_functionality.php';
 		
@@ -5121,6 +5157,25 @@ if (isset($_POST['datepickerSTART']) && strlen($_POST['datepickerSTART']) > 1 &&
 
 	}
 	
+	
+		//FULL RESULT SET
+		$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE Date(modified_dt) >='".Date($converted_date_from)."' AND Date(modified_dt) <='".Date($converted_date_to)."'
+			AND status='COMPLETED' ";
+
+		//echo '<br> the full result set query is: <br> ';
+		//echo $queryFullResultSet;			
+
+
+		$resultFull = mysqli_query($db,$queryFullResultSet); 
+		$rowEntire = @mysqli_fetch_array($resultFull);
+		$numResultENTIRERows=$resultFull->num_rows;
+		//END FULL RESULT SET
+	
 
 }else{
 
@@ -5178,34 +5233,38 @@ if (isset($_POST['datepickerSTART']) && strlen($_POST['datepickerSTART']) > 1 &&
 		
 
 	}
-
-
-}
-
-//FULL RESULT SET
-	$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+	
+	
+		//FULL RESULT SET
+		$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
 			FROM refund AS R 
 			INNER JOIN 
 			users AS U 
 			ON R.created_by = U.user_id 
-			WHERE status='COMPLETED'";
-			
-			
-	$resultFull = mysqli_query($db,$queryFullResultSet); 
-	$rowEntire = @mysqli_fetch_array($resultFull);
-	$numResultENTIRERows=$resultFull->num_rows;
-	//END FULL RESULT SET
+			WHERE status='COMPLETED' ";
+
+		//echo '<br> the full result set query is: <br> ';
+		//echo $queryFullResultSet;			
 
 
+		$resultFull = mysqli_query($db,$queryFullResultSet); 
+		$rowEntire = @mysqli_fetch_array($resultFull);
+		$numResultENTIRERows=$resultFull->num_rows;
+		//END FULL RESULT SET
+
+
+}
+
+//echo '<br> the query is: <br> ';
+//echo $query;
 
 
 $arrayRefundUsers=array();
 
 $queryUserIDs="SELECT user_id, first_name, last_name FROM users";
 $resultUserIDs = mysqli_query($db,$queryUserIDs); 
-
-	
 $ctr=0;
+
 while ($row = mysqli_fetch_array($resultUserIDs)){
 
 	$arrayRefundUsers[$row['user_id']]=$row['first_name'].' '.$row['last_name'];
@@ -5214,6 +5273,8 @@ while ($row = mysqli_fetch_array($resultUserIDs)){
 ///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 print '<br><br>';
 print '<center><b>COMPLETED:</b></center>';
+
+//$_SAVE_POST=$_POST;
 
 if($_POST['datepickerSTART']){
 	
@@ -5301,7 +5362,11 @@ while ($row = mysqli_fetch_array($result)){
 	print	'</td></tr>';
 	
 	}
-	instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+	
+	//$URL_String_BACK
+	
+	instantiate_page_variablesReports($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+	//instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
 }	
 
 print '</table></div>';
@@ -5331,6 +5396,369 @@ EDITUSERPAGE;
 }	
 
 	
+	
+function reportCompletedNEW(){
+	
+	//include 'dump_all_page_contents.php'; 
+		if(sizeof($_POST)>0){
+
+			//showHeaderALL($_SESSION['username'], $_SESSION['access']);
+	
+		}
+	include 'connectToDB.php'; 
+	
+	?>
+
+
+
+<?php
+
+
+
+if( isset($_POST['generateReport']) && sizeof($_POST['generateReport']) > 0){
+
+
+if (isset($_POST['datepickerSTART']) && strlen($_POST['datepickerSTART']) > 1 && isset($_POST['datepickerEND'])){
+	
+/*
+$_SAVE_POST=array();
+$_SAVE_REQUEST=array();
+	
+$_SAVE_POST=$_POST;
+$_SAVE_REQUEST=$_REQUEST;
+*/
+
+$_SESSION['SAVE_POST']=array();
+$_SESSION['SAVE_REQUEST']=array();
+
+$_SESSION['SAVE_POST']=$_POST;
+$_SESSION['SAVE_REQUEST']=$_REQUEST;
+
+/*
+echo 'var dumps of request and post ';echo '<br>';
+var_dump($_SESSION['SAVE_POST']);
+echo '<br>';
+var_dump($_SESSION['SAVE_REQUEST']);
+*/
+
+	
+
+		include 'pagination_functionality.php';
+		
+		instantiate_initialOffset();
+		
+		
+
+		$pieces_from = explode("/", $_POST['datepickerSTART']);
+		$converted_date_from=date("Y-m-d", mktime(0, 0, 0, $pieces_from[0], $pieces_from[1], $pieces_from[2]));
+		$entered_dt_from = new DateTime($converted_date_from);
+		
+
+		$pieces_to = explode("/", $_POST['datepickerEND']);
+		$converted_date_to=date("Y-m-d", mktime(0, 0, 0, $pieces_to[0], $pieces_to[1], $pieces_to[2]));
+		$entered_dt_to = new DateTime($converted_date_to);
+		
+
+		
+		
+	if($accessLvl == 'U'){//is access is only at the user level, then must match the refunds pulled to display only the current users created refunds
+
+		if(!isset($_SESSION['order'])){
+			
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE Date(modified_dt) >='".Date($converted_date_from)."' AND Date(modified_dt) <='".Date($converted_date_to)."' AND status='COMPLETED' 
+			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+			
+	
+			
+		}else{
+
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE Date(modified_dt) >='".Date($converted_date_from)."' AND Date(modified_dt) <='".Date($converted_date_to)."' AND status='COMPLETED' 
+			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+			
+			
+
+		}
+		
+	//	status !='deleted' AND status !='VOIDED' AND accounting_approval=1 AND billing_initial_approval=1 AND billing_final_approval=1 
+
+
+	}else{
+
+		if(!isset($_SESSION['order'])){
+			
+
+			
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to,
+			accounting_approval,billing_initial_approval,billing_final_approval 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE Date(modified_dt) >='".Date($converted_date_from)."' AND Date(modified_dt) <='".Date($converted_date_to)."' AND status='COMPLETED'  
+			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+			
+			
+
+		}else{
+
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to,
+			accounting_approval,billing_initial_approval,billing_final_approval 			
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE Date(modified_dt) >='".Date($converted_date_from)."' AND Date(modified_dt) <='".Date($converted_date_to)."'
+			AND status='COMPLETED' ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+			
+		}
+		
+
+	}
+	
+	
+		//FULL RESULT SET
+		$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE Date(modified_dt) >='".Date($converted_date_from)."' AND Date(modified_dt) <='".Date($converted_date_to)."'
+			AND status='COMPLETED' ";
+
+		//echo '<br> the full result set query is: <br> ';
+		//echo $queryFullResultSet;			
+
+
+		$resultFull = mysqli_query($db,$queryFullResultSet); 
+		$rowEntire = @mysqli_fetch_array($resultFull);
+		$numResultENTIRERows=$resultFull->num_rows;
+		//END FULL RESULT SET
+	
+
+}else{
+
+
+	if($accessLvl == 'U'){//is access is only at the user level, then must match the refunds pulled to display only the current users created refunds
+
+		if(!isset($_SESSION['order'])){
+			
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status='COMPLETED'
+			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+			
+			
+		}else{
+
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status='COMPLETED'
+			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		}
+
+
+	}else{
+
+		if(!isset($_SESSION['order'])){
+		
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to,
+			accounting_approval,billing_initial_approval,billing_final_approval 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status='COMPLETED'  
+			ORDER BY dt_request,U.last_name,status LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+		
+		}else{
+
+			$query = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to,
+			accounting_approval,billing_initial_approval,billing_final_approval 			
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status='COMPLETED'  
+			ORDER BY ".$_SESSION['order']." LIMIT ".$_SESSION['initialOffset'].",".$_SESSION['RowsPerPage'];
+
+		}
+		
+
+	}
+	
+	
+		//FULL RESULT SET
+		$queryFullResultSet = "SELECT NG_enc_id, U.first_name, U.last_name, dt_request,amount, status,refund_id, payable,assigned_to 
+			FROM refund AS R 
+			INNER JOIN 
+			users AS U 
+			ON R.created_by = U.user_id 
+			WHERE status='COMPLETED' ";
+
+		//echo '<br> the full result set query is: <br> ';
+		//echo $queryFullResultSet;			
+
+
+		$resultFull = mysqli_query($db,$queryFullResultSet); 
+		$rowEntire = @mysqli_fetch_array($resultFull);
+		$numResultENTIRERows=$resultFull->num_rows;
+		//END FULL RESULT SET
+
+
+}
+
+//echo '<br> the query is: <br> ';
+//echo $query;
+
+
+$arrayRefundUsers=array();
+
+$queryUserIDs="SELECT user_id, first_name, last_name FROM users";
+$resultUserIDs = mysqli_query($db,$queryUserIDs); 
+$ctr=0;
+
+while ($row = mysqli_fetch_array($resultUserIDs)){
+
+	$arrayRefundUsers[$row['user_id']]=$row['first_name'].' '.$row['last_name'];
+}
+
+///////HEADINGS FROM THE REFUNDS PAGE//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+print '<br><br>';
+print '<center><b>COMPLETED:</b></center>';
+
+//$_SAVE_POST=$_POST;
+
+if($_POST['datepickerSTART']){
+	
+	echo 'Reports for the Range: ';
+	echo $_POST['datepickerSTART'].' Through '.$_POST['datepickerEND'];
+	echo '<br>';
+}
+
+print '<br /><br /><div align = "center">';
+print '<table border="1" cellpadding = "3">
+<tr>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_num=y>Encounter Number</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?refund_id=y>Refund ID</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y>Date Requested</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?encounter_date=y>Urgent</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?requested_by=y>Requested By</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?payable_order=y>Payable To</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?amount_order=y>Amount</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Status</a></b></center></td>
+<td><center><b><a href='.$_SERVER['PHP_SELF'].'?status_order=y>Assigned To</a></b></center></td>'
+;	
+///////END HEADINGS FROM THE REFUNDS PAGE////////////////////?////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+$current_date=date("Y-m-d H:i:s");  
+
+
+$result = mysqli_query($db,$query); 
+
+
+//$row = mysqli_fetch_array($result);
+
+//echo sizeof($row);
+
+$result_display_ctr=0;
+
+while ($row = mysqli_fetch_array($result)){
+	
+	$currentRowSize=sizeof($row);
+
+	$today_dt=$entered_dt=$interval=$refund_requested_by=$date_requested=$refund_assigned_to=$interval="";
+	calculateInterval($row,$refund_requested_by,$date_requested,$today_dt,$entered_dt,$interval,$refund_assigned_to);
+	//$refund_assigned_to=$row['assigned_to'];
+	
+	$refund_assigned_to="";
+	$queryUserIDs="SELECT first_name, last_name FROM users WHERE user_id= '{$row['assigned_to']}'";
+	$resultUserIDs = mysqli_query($db,$queryUserIDs); 
+
+	
+	while ($rowUserIds=mysqli_fetch_array($resultUserIDs)){//build up the assigned to username
+		$refund_assigned_to=$rowUserIds['first_name'].' '.$rowUserIds['last_name'];
+	}
+	
+	
+	
+	if($result_display_ctr<$_SESSION['RowsPerPage']){
+
+	$result_display_ctr++;
+	
+	if($interval->days>30 && $row['status']!="COMPLETED"){
+		print '<tr bgcolor=#FF0000>';
+	}elseif(($interval->days>=15 && $interval->days<30) && $row['status']!="COMPLETED"){
+		print '<tr bgcolor=yellow>';
+	}elseif(($interval->days<=1) && $row['status']!="COMPLETED"){
+		print '<tr bgcolor=#009900>';
+	}else{
+		print '<tr>';
+	}
+
+	//print '<tr>
+	print '<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['NG_enc_id'].'</a></td>
+	<td><a href="'.$_SERVER['PHP_SELF'].'?refund_id='.$row['refund_id'].'&action=edit">'.$row['refund_id'].'</a></td>
+	<td>'.$row['dt_request'].'</td>
+	<td>'. ($row['urgent'] ? 'Yes' : 'No') .'</td>
+	<td>'.$row['first_name'].' '.$row['last_name'].'</td>
+	<td>'.$row['payable'].'</td>';
+	print '<td>$ '.$row['amount'].'</td>';
+	
+	print '<td>COMPLETED</td>';
+	
+
+
+	print '<td>'.$refund_assigned_to.'</td>';
+
+	print	'</td></tr>';
+	
+	}
+	instantiate_page_variablesReports($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+	//instantiate_page_variables($row,$tempOrigStartPosition,$page,$URL_String_BACK,$URL_String_FORWARD);
+}	
+
+print '</table></div>';
+
+/*
+print <<<EDITUSERPAGE
+	<br><center><a href="reports.php"><button value="Back" name="Back">Back To Reports Page</button></a></center>
+EDITUSERPAGE;
+*/
+
+//print '<h3 align="center"><a href="addrefund.php">Create a New Refund Request</a></h3>';
+	if ($currentRowSize>$_SESSION['RowsPerPage']){ //only conditionally display the pagination
+
+	//displayPagination($row,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+	displayPaginationINDEX($numResultENTIRERows,$tempOrigStartPosition,$URL_String_BACK,$URL_String_FORWARD);
+	}
+	
+	echo '<center>';
+			 echo 'TOTAL Results: '.$numResultENTIRERows.' Records ';
+			 echo '<h2>'.ceil($numResultENTIRERows/$_SESSION['RowsPerPage']).' Page(s) </h2>';
+		echo '</center>';
+	
+		showFooter();
+	
+}
+	
+}		
 	
 
 

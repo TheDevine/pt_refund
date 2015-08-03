@@ -13,6 +13,8 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged in show page
 			showPage($_SESSION['username'],$_SESSION['access']); //so index page wont duplicate content under content when selections are made
 		}
 		*/
+		
+
 
 
 } elseif(isset($_POST['username']) && $_POST['username']!=NULL && $_POST['username']!="" ) { //if user has attempted to login, validate login

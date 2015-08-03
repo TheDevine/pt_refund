@@ -778,8 +778,17 @@ EDITUSERPAGE;
 	
 		if(isset($_GET['report_id']) && sizeof($_GET['report_id'])>0){
 			
+			
+			
 			if($_GET['report_id']==1){
-				reportCompleted();
+				
+				if (sizeof($_REQUEST)==0 || isset($_GET['page_number'])){
+				
+				//reportCompleted();
+				
+				}else{
+					reportCompleted();
+				}
 			}
 			elseif($_GET['report_id']==2){
 				reportNew();

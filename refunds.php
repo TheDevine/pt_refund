@@ -26,8 +26,44 @@ include 'connectToDB.php';
 if (array_key_exists('userid', $_SESSION)){	//If user is logged in show page
 
 		if (sizeof($_REQUEST)==0 || isset($_GET['page_number'])){
-			//echo 'coming here each time';
-			showPage($_SESSION['username'],$_SESSION['access']); //so index page wont duplicate content under content when selections are made
+			
+		//$_POST=$_SAVE_POST;
+		$_POST['page_number']=$_GET['page_number'];
+		//if (sizeof($_REQUEST)==0){
+
+		//if( isset($_POST['generateReport']) && sizeof($_POST['generateReport']) > 0){
+			
+		
+			//include 'dump_all_page_contents.php';
+		
+			
+			if(isset($_POST['page_number'])){
+				$_GET['page_number']=$_POST['page_number'];
+				$_REQUEST['page_number']=$_POST['page_number'];
+
+			}
+
+			//echo 'var dumps of request and post ';echo '<br>';
+			//var_dump($_SESSION['SAVE_POST']);
+			//echo '<br>';
+			//var_dump($_SESSION['SAVE_REQUEST']);
+			
+			$_REQUEST=$_SESSION['SAVE_REQUEST'];
+			$_POST=$_SESSION['SAVE_POST'];
+			
+			$_REQUEST['page_number']=$_GET['page_number'];
+			$_POST['page_number']=$_GET['page_number'];
+			$_POST['report_id']=$_REQUEST['report_id'];
+			
+
+			
+
+			//echo 'Came here each time';
+			//include 'dump_all_page_contents.php';
+			//reportCompleted();
+			reportCompletedNEW();
+			//die();
+			//showPage($_SESSION['username'],$_SESSION['access']); //so index page wont duplicate content under content when selections are made
 		}
 
 
