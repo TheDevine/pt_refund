@@ -521,7 +521,7 @@ function showPage($username='', $accessLvl = '', $errors = ''){
 	
 	if ($rowquery_dept_id['dept_id']==3){ //3 is PAR2, only PAR2 creates
 
-		print '<h3 align="center"><a href="addrefund.php">Create a NEW Refund Request</a></h3>';
+		print '<h3 align="center"><a href="reset_addRefund.php">Create a NEW Refund Request</a></h3>';
 		echo '<br>';
 	}
 	

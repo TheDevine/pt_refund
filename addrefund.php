@@ -132,7 +132,6 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				//create user in db
 				$now = date("Y-m-d H:i:s");	
 				
-
 				$query = "INSERT INTO refund (NG_enc_id, created_by, dt_request, urgent, amount, payable, 
 				addr_ln_1,addr_ln_2,city,state,zip,purpose,status,comments,assigned_to,refund_type) 
 				VALUES ('{$_POST['encounters'][0]}','{$_SESSION['userid']}','{$now}',{$_POST['urgent']},
@@ -141,12 +140,20 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				$result = mysqli_query($db,$query);
 				$last_id = mysqli_insert_id($db);
 				
+				$auto_increment=$last_id++;
+				//reset auto increment id in case of errors
+				$query_resetAutoIncrement="ALTER TABLE refund AUTO_INCREMENT = '{$auto_increment}'";
+				$result = mysqli_query($db,$query_resetAutoIncrement);
+				
+				
+				
 				//upload any attachments that have been added with the refund
 				$successfulUpload=uploadFiles($last_id);
 				
-
 				if($successfulUpload==1){
-				
+					
+					//echo '<br> do I get here';
+					
 				if(sizeof($_POST['encounters'])>1){
 
 					foreach($_POST['encounters'] as $key => $value){
@@ -184,7 +191,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				if($_POST['urgent']){ //verify that this works as intended
 				
 	
-					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$last_id." has been requested. <br>  This refund is marked as URGENT.";
+					$status="A Refund for ".$_POST['payable']." with a Refund ID ".($last_id-1)." has been requested. <br>  This refund is marked as URGENT.";
 				
 
 					$from = "Patient Refund <noreply@chcb.org>";
@@ -222,7 +229,7 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 				}else{
 		
 
-					$status="A Refund for ".$_POST['payable']." with a Refund ID ".$last_id." has been requested.";
+					$status="A Refund for ".$_POST['payable']." with a Refund ID ".($last_id-1)." has been requested.";
 						
 					$from = "Patient Refund <noreply@chcb.org>";
 					$subject = "Created Patient Refund Request";
@@ -275,30 +282,26 @@ if (array_key_exists('userid', $_SESSION)){	//If user is logged, check for acces
 			
 			
 				}else{ //unsuccessful upload, back everything out
-					
+				
 					$query="DELETE FROM refund WHERE refund_id='{$last_id}'";
-
 					$result = mysqli_query($db,$query);
 					
-					var_dump($result);
-					//$last_id = mysqli_insert_id($db);
-						
+					$auto_increment=$last_id;
+					//reset auto increment id in case of errors
+					$query_resetAutoIncrement="ALTER TABLE refund AUTO_INCREMENT = '{$auto_increment}'";
+					$result = mysqli_query($db,$query_resetAutoIncrement);
+	
+					//showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));
+					
 				}
-			
-
-			
-			
+	
 			} else {
 				
-
-
 				//show errors at top of page
-				print '<h2 class = "error"> The following errors were encountered:</h2>';
+				print '<center><h2 class = "error"> THE following errors were encountered:</h2>';
 				print '<ul><li>';
 				print implode('</li><li>', $errors);
-				print '</li></ul>';
-
-
+				print '</li></ul></center>';
 
 				showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));
 			}
@@ -361,79 +364,531 @@ if (is_dir($target_dir)) {
 
 function uploadFiles($refundID_just_created){
 	
-	$target_dir = "uploads/".$refundID_just_created."/";
+	$off_by_one_targetDIR=$refundID_just_created-1;
+	$target_dir = "uploads/".$off_by_one_targetDIR."/";
 
 	$target_file="";
+	$naming_convention="";
+	$errors=array();
+	$uploadOk = 1;
+	
+		
+	if (!file_exists($target_dir )) { //if it doesnt exist, make it
+
+		//make directory
+		//if make fails error
+		//else run the program
+	}
 	
 	if (!file_exists($target_dir )) { //so we don't make the folder for each of the uploads
-		
+
 		if (!mkdir($target_dir, 0777, true)) {
+
 				die('There was an error creating the folder in which to upload your documents.  Please make sure you have read write permissions on the 
 				machine you are using.  If the error persists, please contact your local network administrator.');
-			}else{
-				for($x=1;$x<=5;$x++){//build up string of filenames
-					
-					$fileBaseName="file";
-					$fileBaseName.=(string)$x;
-					
-					if(strlen($_FILES[$fileBaseName]["name"])>0){
-		
-					
-						$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
-						
-						$uploadOk = 1;
-						$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-
-						
-						// Check if file already exists
-						if (file_exists($target_file)) {
-		
-							echo "Sorry, file already exists. <br>";
-							$uploadOk = 0;
-						}
-						// Check file size
-						if ($_FILES[$fileBaseName]["size"] > 500000) {
-							echo "Sorry, your file is too large. <br>";
-							$uploadOk = 0;
-						}
-
-
-						// Allow certain file formats
-						if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-						&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
-						&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
 			
-							echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
+			}
+			
+	}	
+		//	else{
+				
+				//upload files with file naming conventions in place
+
+				/*
+				EncounterNoteRef72.pdf, 
+				TransactionDetailsRef72.pdf, 
+				and CommercialPaperworkRef72.pdf 
+				*/
+
+						
+				if($_POST['refund_type']=='Commercial'){ //needs at least 3 documents
+				
+		
+					$fileBaseName="commercial_paperwork";
+					$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+					$handle=substr($_FILES[$fileBaseName]["name"],0,strpos($_FILES[$fileBaseName]["name"],'.'));
+					
+					$refundIDToMatch=$refundID_just_created-1;
+					$naming_convention="CommercialPaperworkRef".$refundIDToMatch;
+					$file_handle=$handle;
+					
+					if($file_handle!=$naming_convention){
+						
+
+						$errors[]='Your files must match the naming convention: <br>';
+						$errors[]='CommercialPaperworkRefREFUND_ID.FileType <br>';
+						$errors[]='Example for Refund ID 1: CommercialPaperworkRef1.pdf <br><br>';
+
+						$uploadOk = 0;
+						//break;
+					}
+					
+					
+					/* ENCOUNTER NOTE and TRANSACTION DETAIL PAGE */
+					///////////////////////////////////////////////////////////////////////////////////
+					for($x=1;$x<=3;$x++){//runs three times
+						
+							if($x==1)
+								$fileBaseName="encounter_note";
+							elseif($x==2)
+								$fileBaseName="transaction_detail_page";
+							else
+								$fileBaseName="commercial_paperwork";
+
+							$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+							
+							$handle=substr($_FILES[$fileBaseName]["name"],0,strpos($_FILES[$fileBaseName]["name"],'.'));
+							
+							if($x==1){ //EncounterNoteRef
+								
+								$refundIDToMatch=$refundID_just_created-1;
+								$naming_convention="EncounterNoteRef".$refundIDToMatch;
+								$file_handle=$handle;
+								
+								if($file_handle!=$naming_convention){
+									
+
+									$errors[]='Your files must match the naming convention: <br>';
+									$errors[]='EncounterNoteRefREFUND_ID.FileType <br>';
+									$errors[]='Example for Refund ID 1: EncounterNoteRef1.pdf <br><br>';
+									
+									/*
+									print '<center><h2 class = "error"> THE following errors were encountered:</h2>';
+									print '<ul><li>';
+									print implode('</li><li>', $errors);
+									print '</li></ul></center>';
+									*/
+									
+									//$errors=array();//reset the errors array
+
+									$uploadOk = 0;
+									//break;
+								}
+								
+							}
+							elseif($x==2){
+								//TransactionDetailsRef72
+								$refundIDToMatch=$refundID_just_created-1;
+								$naming_convention="TransactionDetailsRef".$refundIDToMatch;
+								$file_handle=$handle;
+								
+								if($file_handle!=$naming_convention){
+									
+
+									$errors[]='Your files must match the naming convention: <br>';
+									$errors[]='TransactionDetailsRefREFUND_ID.FileType <br>';
+									$errors[]='Example for Refund ID 1: TransactionDetailsRef1.pdf <br><br>';
+									
+									/*
+									print '<center><h2 class = "error"> THE following errors were encountered:</h2>';
+									print '<ul><li>';
+									print implode('</li><li>', $errors);
+									print '</li></ul></center>';
+									*/
+									
+									//$errors=array();//reset the errors array
+
+									$uploadOk = 0;
+									//break;
+								}
+								
+							}else{
+								//CommercialPaperworkRef72
+								$refundIDToMatch=$refundID_just_created-1;
+								$naming_convention="CommercialPaperworkRef".$refundIDToMatch;
+								$file_handle=$handle;
+								
+								if($file_handle!=$naming_convention){
+									
+
+									$errors[]='Your files must match the naming convention: <br>';
+									$errors[]='CommercialPaperworkRefREFUND_ID.FileType <br>';
+									$errors[]='Example for Refund ID 1: CommercialPaperworkRef1.pdf <br><br>';
+									
+									/*
+									print '<center><h2 class = "error"> THE following errors were encountered:</h2>';
+									print '<ul><li>';
+									print implode('</li><li>', $errors);
+									print '</li></ul></center>';
+									*/
+									
+									//$errors=array();//reset the errors array
+
+									$uploadOk = 0;
+									//break;
+								}
+								
+								
+							}
+
+						
+							//echo 'the upload ok status is now <br>';
+							//echo $uploadOk;
+	
+							if(strlen($_FILES[$fileBaseName]["name"])>0 && $uploadOk){
+			
+						
+							$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+							
+							$uploadOk = 1;
+							$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+							
+							// Check if file already exists
+							if (file_exists($target_file)) {
+			
+								echo "Sorry, file already exists. <br>";
+								$uploadOk = 0;
+							}
+							// Check file size
+							if ($_FILES[$fileBaseName]["size"] > 500000) {
+								echo "Sorry, your file is too large. <br>";
+								$uploadOk = 0;
+							}
+
+
+							// Allow certain file formats
+							if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+							&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
+							&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
+				
+								echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
+								$uploadOk = 0;
+							}
+							// Check if $uploadOk is set to 0 by an error
+							if ($uploadOk == 0) {
+								
+								echo "Sorry, your file was not uploaded.";
+								// if everything is ok, try to upload file
+							} else {
+									if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
+										echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
+									} else {
+										echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
+										 print_r( error_get_last() );
+									}
+								}		
+
+						}else{
+							
+							/*echo "Sorry, Three documents are required to create a Commercial Refund Request: <br>
+							An encounter note, a transaction detail page and commercial paperwork document.<br> Please fix and re-upload.";
+							*/
+							/*
+							$errors[]="Sorry, Three documents are required to create a Commercial Refund Request: <br>
+							An encounter note, a transaction detail page and commercial paperwork document.<br> Please fix and re-upload.";
+							*/
+							//print_r( error_get_last() );
 							$uploadOk = 0;
 						}
-						// Check if $uploadOk is set to 0 by an error
-						if ($uploadOk == 0) {
+						
+					
+					}//end for loop for the two required files of personal
+					
+					
+						if($errors){
 							
-							echo "Sorry, your file was not uploaded.";
-							// if everything is ok, try to upload file
-						} else {
-								if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
-									echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
-								} else {
-									echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
-									 print_r( error_get_last() );
+							print '<center><h2 class = "error"> THE following errores were encountered:</h2>';
+							print '<ul><li>';
+							print implode('</li><li>', $errors);
+							print '</li></ul></center>';
+							
+							$uploadOk = 0;
+							$errors=array();//reset the errors array
+	
+							include 'connectToDB.php';
+
+							$refundToDelete=$refundID_just_created-1;
+						
+							$query_delete="DELETE FROM refund WHERE refund_id='{$refundToDelete}'";
+							$result_delete = mysqli_query($db,$query_delete);
+													
+							$auto_increment=$refundToDelete;
+							//reset auto increment id in case of errors
+
+							$query_resetAutoIncrement="ALTER TABLE refund AUTO_INCREMENT = {$auto_increment} ";
+
+							$result = mysqli_query($db,$query_resetAutoIncrement);
+							
+
+							$_SESSION['SAVE_POST']=$_POST;
+								
+							//showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));		
+					
+							print '<h4 align="center"><a href="addrefund.php">Return to Add Refund Page</a></h4>';
+						}
+					
+					
+					///////////////////////////////////////////////////////////////////////////////////
+					/* END ENCOUNTER NOTE and TRANSACTION DETAIL PAGE */
+					
+					
+				}else{ //only requires encounter_note and transaction_detail_page
+					
+						for($x=1;$x<3;$x++){//runs twice
+						
+							if($x==1)
+								$fileBaseName="encounter_note";
+							else
+								$fileBaseName="transaction_detail_page";
+
+							$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+							
+							$handle=substr($_FILES[$fileBaseName]["name"],0,strpos($_FILES[$fileBaseName]["name"],'.'));
+							
+							if($x==1){ //EncounterNoteRef
+								
+								$refundIDToMatch=$refundID_just_created-1;
+								$naming_convention="EncounterNoteRef".$refundIDToMatch;
+								$file_handle=$handle;
+								
+								if($file_handle!=$naming_convention){
+									
+									$errors[]='Your files must match the naming convention: <br>';
+									$errors[]='EncounterNoteRefREFUND_ID.FileType <br>';
+									$errors[]='Example for Refund ID 1: EncounterNoteRef1.pdf';
+									/*
+									print '<center><h2 class = "error"> THE following errors were encountered:</h2>';
+									print '<ul><li>';
+									print implode('</li><li>', $errors);
+									print '</li></ul></center>';
+									
+									$errors=array();//reset the errors array
+									*/
+
+									$uploadOk = 0;
+									//break;
 								}
-							}		
+								
+							}
+							else{
+								//TransactionDetailsRef72
+								
+								$refundIDToMatch=$refundID_just_created-1;
+								$naming_convention="TransactionDetailsRef".$refundIDToMatch;
+								$file_handle=$handle;
+								
+								if($file_handle!=$naming_convention){
+									
+									$errors[]='Your files must match the naming convention: <br>';
+									$errors[]='TransactionDetailsRefREFUND_ID.FileType <br>';
+									$errors[]='Example for Refund ID 1: TransactionDetailsRef1.pdf';
+									
+									/*
+									print '<center><h2 class = "error"> THE following errors were encountered:</h2>';
+									print '<ul><li>';
+									print implode('</li><li>', $errors);
+									print '</li></ul></center>';
+									
+									$errors=array();//reset the errors array
+									*/
 
-					}
+									$uploadOk = 0;
+									//break;
+								}
+								
+							}
 
-				}
+						
+						
+							//die();
+							
+							/*
+							EncounterNoteRef72.pdf, 
+							TransactionDetailsRef72.pdf, 
+							and CommercialPaperworkRef72.pdf 
+							*/
+						
+			
+						
+							if(strlen($_FILES[$fileBaseName]["name"])>0 && $errors){
+			
+						
+							$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+							
+							$uploadOk = 1;
 
-		}
+							
+							$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+							
+							// Check if file already exists
+							if (file_exists($target_file)) {
+			
+								echo "Sorry, file already exists. <br>";
+								$uploadOk = 0;
+							}
+							// Check file size
+							if ($_FILES[$fileBaseName]["size"] > 500000) {
+								echo "Sorry, your file is too large. <br>";
+								$uploadOk = 0;
+							}
+
+
+							// Allow certain file formats
+							if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+							&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
+							&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
+				
+								echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
+								$uploadOk = 0;
+							}
+							// Check if $uploadOk is set to 0 by an error
+							if ($uploadOk == 0) {
+								
+								echo "Sorry, your file was not uploaded.";
+								// if everything is ok, try to upload file
+							} else {
+									if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
+										echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
+									} else {
+										echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
+										 print_r( error_get_last() );
+									}
+								}		
+
+						}else{
+							
+							//echo "Sorry, both an encounter note and a transaction detail are required to uploaded and named appropriately. <br>";
+							
+							//$errors[]="Sorry, both an encounter note and a transaction detail are required to uploaded and named appropriately. <br>";
+							//print_r( error_get_last() );
+							//$uploadOk = 0;
+							
+
+							if($errors){
+								print '<center><h2 class = "error"> THE following errores were encountered:</h2>';
+								print '<ul><li>';
+								print implode('</li><li>', $errors);
+								print '</li></ul></center>';
+
+								$uploadOk = 0;
+								$errors=array();//reset the errors array
+								//showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));
+								
+								include 'connectToDB.php';
+								
+								$refundToDelete=$refundID_just_created-1;
+							
+								$query_delete="DELETE FROM refund WHERE refund_id='{$refundToDelete}'";
+								$result_delete = mysqli_query($db,$query_delete);
+							
+								$auto_increment=$refundToDelete;
+								//reset auto increment id in case of errors
+								$query_resetAutoIncrement="ALTER TABLE refund AUTO_INCREMENT = {$auto_increment}";
+								
+		
+								$result = mysqli_query($db,$query_resetAutoIncrement);
+								
+				
+								//showPage($_SESSION['username'], $_SESSION['access'],validateNewRefund($errors));	
+								$_SESSION['SAVE_POST']=$_POST;
+								
+								//include 'dump_all_page_contents.php';
+
+								print '<h4 align="center"><a href="addrefund.php">Return to Add Refund Page</a></h4>';
+								
+							}
+
+							
+							
+							
+						}
+						
+					
+					}//end for loop for the two required files of personal
+					
+
+			
+				}//end else personal refund
+				
+				
+				if($uploadOk){ //only evaluate extra uploads if the necessary uploads are successful
+					//continue...
+					//before was [file1]['name'], file2 etc..
 	
-	}
+				
+						if(isset($_POST['file4']) || isset($_POST['file5']) ){
+							
+							$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+						
+		
+							for($x=4;$x<=5;$x++){//build up string of filenames
+								
+								$fileBaseName="file";
+								$fileBaseName.=(string)$x;
+								
+								if(strlen($_FILES[$fileBaseName]["name"])>0){
+					
+								
+									$target_file = $target_dir . basename($_FILES[$fileBaseName]["name"]);
+									
+									$uploadOk = 1;
+									$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+									
+									// Check if file already exists
+									if (file_exists($target_file)) {
+					
+										echo "Sorry, file already exists. <br>";
+										$uploadOk = 0;
+									}
+									// Check file size
+									if ($_FILES[$fileBaseName]["size"] > 500000) {
+										echo "Sorry, your file is too large. <br>";
+										$uploadOk = 0;
+									}
+
+
+									// Allow certain file formats
+									if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+									&& $imageFileType != "gif" && $imageFileType != "pdf" && $imageFileType != "doc" && $imageFileType != "txt" && $imageFileType != "html"
+									&& $imageFileType != "bmp" && $imageFileType != "tif" && $imageFileType != "tiff" && $imageFileType != "docx" && $imageFileType != "xlsx") {
+						
+										echo "Sorry, only JPG, JPEG, PNG, GIF, PDFs, DOCS, TXTs, HTML, xlsx, BMP and tif/tiff file types are allowed. <br>";
+										$uploadOk = 0;
+									}
+									// Check if $uploadOk is set to 0 by an error
+									if ($uploadOk == 0) {
+										
+										echo "Sorry, your file was not uploaded.";
+										// if everything is ok, try to upload file
+									} else {
+											if (move_uploaded_file($_FILES[$fileBaseName]["tmp_name"], $target_file)) {
+												echo "The file ". basename( $_FILES[$fileBaseName]["name"]). " has been uploaded. <br>";
+											} else {
+												echo "Sorry, the following error was encountered when attempting to upload your file. <br>";
+												 print_r( error_get_last() );
+											}
+										}		
+
+								}
+
+							}//last ifs for loop
+						
+						
+						}//last if for file4 and file5
+						
+				}//END only evaluate extra uploads if the necessary uploads are successful
+				
+		// }//else of the mkdir
+		
+		
 	
+
+	
+
+	//return upload outcome
 	if($uploadOk==1){
+		//echo 'return true';
 		return 1;
 	}else{
+		//echo 'return false';
 		return 0;
 	}
-}
+	
+	
+} //end function
 
 
 
@@ -660,8 +1115,20 @@ function showPage($username='', $accessLvl = '', $errors = ''){
           </tr>
 	
 	*/
+	
+	//include 'connectToDB.php';
 
 	if (isset($_POST['amount'])){
+		
+		
+		$query ="SELECT refund_id from refund ORDER BY refund_id DESC LIMIT 1";
+		$resultLargestRefundID= mysqli_query($db,$query); 
+		
+		while ($row = mysqli_fetch_array($resultLargestRefundID)){
+			$nextRefundID=$row['refund_id'];
+		}
+		
+		$nextRefundID+=1;
 
 	print <<<ADDREFUNDPAGE
 
@@ -675,7 +1142,12 @@ function showPage($username='', $accessLvl = '', $errors = ''){
       <table style="width: 100%" border="1">
         <tbody>
 		
-	          <tr>
+		<tr>
+			<td><b>Refund ID</b></td>
+			<td><b>{$nextRefundID}</b></td>
+		</tr>
+		
+	    <tr>
             <td>Type Of Refund</td>
             <td>
 
@@ -693,10 +1165,7 @@ ADDREFUNDPAGE;
 		  </select>
 		</td>
 	  </tr>		  
-		  
-		  
-		  
-		  
+		 
           <tr>
             <td>Urgent</td>
             <td><input maxlength="50" name="urgent" type="checkbox" value ="1"><br>
@@ -783,15 +1252,15 @@ print <<<ADDREFUNDPAGE
           </tr>
           <tr>
           	<td>Encounter Note</td>
-          	<td><input type="file" name="file1" ></td>
+          	<td><input type="file" name="encounter_note" ></td>
           </tr>
           <tr>
           	<td>Transaction Detail Page</td>
-          	<td><input type="file" name="file2"></td>
+          	<td><input type="file" name="transaction_detail_page"></td>
           </tr>
           <tr>
           	<td>Commercial Paperwork</td>
-          	<td><input type="file" name="file3"></td>
+          	<td><input type="file" name="commercial_paperwork"></td>
           </tr>
           <tr>
           	<td>Attachment 4</td>
@@ -814,21 +1283,36 @@ print <<<ADDREFUNDPAGE
       <button formmethod="post" formaction="{$_SERVER['PHP_SELF']}" value="submit" name="Submit">Request Refund</button></form>
 ADDREFUNDPAGE;
 	}else{
+		
+		//include 'dump_all_page_contents.php';
+		
+		$_POST=$_SESSION['SAVE_POST'];
+				
+		$query ="SELECT refund_id from refund ORDER BY refund_id DESC LIMIT 1";
+		$resultLargestRefundID= mysqli_query($db,$query); 
+		
+		while ($row = mysqli_fetch_array($resultLargestRefundID)){
+			$nextRefundID=$row['refund_id'];
+		}
+		
+		$nextRefundID+=1;
+			
 		print <<<ADDREFUNDPAGE
 
 		<h2 align="center">Add a New Refund</h2>
 			<a href="index.php">Back to Refunds</a>
 	<br/><br/>
 
-		
-		
-		<form method="POST" action="{$_SERVER['PHP_SELF']}" name="add_refund" enctype="multipart/form-data" >
-	
+	<form method="POST" action="{$_SERVER['PHP_SELF']}" name="add_refund" enctype="multipart/form-data" >
       <table style="width: 100%" border="1" class="input_fields_wrap">
-	
         <tbody>
-	  
-	          <tr>
+		
+		<tr>
+			<td><b>Refund ID</b></td>
+			<td><b>{$nextRefundID}</b></td>
+		</tr>  
+	        
+		<tr>
             <td>Type Of Refund</td>
             <td>
 
@@ -855,26 +1339,26 @@ ADDREFUNDPAGE;
           <tr>
           	<td>Amount</td>
 			
-          	<td><input maxlength="50" name="amount" type="text" value =""><br />
+          	<td><input maxlength="50" name="amount" type="text" value ="{$_POST['amount']}"><br />
           </tr>
           <tr>
             <td>Check Payable To:</td>
-            <td><input name="payable" type="text" value="">
+            <td><input name="payable" type="text" value="{$_POST['payable']}">
             </td>
           </tr>
           <tr>
             <td>Address Line 1</td>
-            <td><input name="addr_ln_1" type="text" value="">
+            <td><input name="addr_ln_1" type="text" value="{$_POST['addr_ln_1']}">
             </td>
           </tr>
           <tr>
             <td>Address Line 2</td>
-            <td><input name="addr_ln_2" type="text" value="">
+            <td><input name="addr_ln_2" type="text" value="{$_POST['addr_ln_2']}">
             </td>
           </tr>
           <tr>
             <td>City</td>
-            <td><input  name="city" type="text" value="">
+            <td><input  name="city" type="text" value="{$_POST['city']}">
             </td>
 		  </tr>	
 			
@@ -907,7 +1391,7 @@ ADDREFUNDPAGE;
 		  
           <tr>
             <td>Zip</td>
-            <td><input  maxlength="10" name="zip" type="text" value="">
+            <td><input  maxlength="10" name="zip" type="text" value="{$_POST['zip']}">
             </td>
           </tr>
 
@@ -919,25 +1403,25 @@ print <<<ADDREFUNDPAGE
 
           <tr>
             <td>Purpose</td>
-            <td><input name="purpose" type="text" value="">
+            <td><input name="purpose" type="text" value="{$_POST['purpose']}">
             </td>
           </tr>
           <tr>
             <td>Comments</td>
-            <td><textarea name="comments"  cols="20" rows="4" value="" ></textarea>
+            <td><textarea name="comments"  cols="20" rows="4" value="{$_POST['comments']}" ></textarea>
             </td>
           </tr>
           <tr>
           	<td>Encounter Note</td>
-          	<td><input type="file" name="file1" ></td>
+          	<td><input type="file" name="encounter_note" ></td>
           </tr>
           <tr>
           	<td>Transaction Detail Page</td>
-          	<td><input type="file" name="file2"></td>
+          	<td><input type="file" name="transaction_detail_page"></td>
           </tr>
           <tr>
           	<td>Commercial Paperwork</td>
-          	<td><input type="file" name="file3"><font color=red>* Only Required if Commercial Refund</font></td>
+          	<td><input type="file" name="commercial_paperwork"><font color=red>* Only Required if Commercial Refund</font></td>
           </tr>
           <tr>
           	<td>Attachment 4</td>

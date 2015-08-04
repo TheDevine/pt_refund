@@ -3823,6 +3823,9 @@ function showPage($username='', $accessLvl = '', $errors = ''){ //page where use
 		print '</li></ul>';
 	}
 	
+	
+
+	
 	$query_dept = "SELECT dept_id FROM users WHERE user_id={$_SESSION['userid']}";
 	$result_dept = mysqli_query($db,$query_dept); 
 	$dept_row = mysqli_fetch_array($result_dept);
